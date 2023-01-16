@@ -16,8 +16,8 @@ pub enum TokenType {
     // One or two char tokens
     Bang,
     BangEqual,
-    Equal,      // Assignment
-    EqualEqual, // Equality
+    Assign,      // Assignment
+    Equal, // Equality
     Greater,
     GreaterEqual,
     Less,
@@ -50,6 +50,7 @@ pub enum TokenType {
 }
 
 #[derive(Debug, PartialEq, Clone)]
+#[allow(dead_code)]
 pub enum Object {
     Num(f64),
     Str(String),

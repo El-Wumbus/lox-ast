@@ -1,0 +1,8 @@
+// This is a comment
+(( )){} // Grouping stuff
+!*+=/=<> <= == // operator
+("Multiline
+string")
+
+1243 // A Number
+1213.21 // A Numberc
