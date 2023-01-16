@@ -123,6 +123,9 @@ impl Scanner {
                             break;
                         }
                     }
+                } else if self.is_match('*') {
+                    // Block comment start
+                    self.scan_comment()?;
                 } else {
                     self.add_token(TokenType::Slash);
                 }
@@ -147,6 +150,47 @@ impl Scanner {
             }
         }
         Ok(())
+    }
+
+    /// A recursive function that scans for block comments and supports nesting
+    fn scan_comment(&mut self) -> Result<(), LoxError> {
+        loop {
+            match self.peek() {
+                // The end of the comment
+                Some('*') => {
+                    self.advance();
+                    if self.is_match('/') {
+                        return Ok(());
+                    }
+                }
+
+                // The beginning of a new, nested comment.
+                Some('/') => {
+                    self.advance();
+                    // We just opened another comment, so we call .scan_comment on that block
+                    // This allows for nested block comments
+                    if self.is_match('*') {
+                        self.scan_comment()?;
+                    }
+                }
+
+                // Handle our newlines
+                Some('\n') => {
+                    self.advance();
+                    self.line += 1;
+                }
+
+                None => {
+                    return Err(LoxError::error(
+                        self.line,
+                        "Unterminated block comment.".to_string(),
+                    ))
+                }
+                _ => {
+                    self.advance();
+                }
+            };
+        }
     }
 
     fn identifier(&mut self) {
@@ -193,7 +237,7 @@ impl Scanner {
         self.add_token_object(TokenType::Number, Some(Object::Num(value.parse().unwrap())));
     }
 
-    /// Peaks two chars ahead
+    /// Peaks two chars ahead.
     fn peek_next(&self) -> Option<char> {
         self.source.get(self.current + 1).copied()
     }
@@ -219,7 +263,10 @@ impl Scanner {
 
         // If there is no ending quote then we complain
         if self.is_at_end() {
-            return Err(LoxError::error(self.line, "Unterminated String".to_string()));
+            return Err(LoxError::error(
+                self.line,
+                "Unterminated String".to_string(),
+            ));
         }
         // Consume closing quote
         self.advance();
@@ -232,7 +279,7 @@ impl Scanner {
         self.add_token_object(TokenType::String, Some(Object::Str(value)));
         Ok(())
     }
-    /// Like the `advance()` method, but doesn't consume chars
+    /// Like the `advance()` method, but doesn't consume chars.
     fn peek(&self) -> Option<char> {
         self.source.get(self.current).copied()
     }
@@ -244,10 +291,12 @@ impl Scanner {
         *result
     }
 
+    /// Appends a token with no literal.
     fn add_token(&mut self, ttype: TokenType) {
         self.add_token_object(ttype, None);
     }
 
+    /// Appends a token.
     fn add_token_object(&mut self, ttype: TokenType, literal: Option<Object>) {
         // Get a char slice from the source, then turn it to an iterator. After this, collect
         // into a string
@@ -256,10 +305,13 @@ impl Scanner {
             .push(Token::new(ttype, lexeme, literal, self.line))
     }
 
+    /// Returns true if we're at the end of the string.
     fn is_at_end(&self) -> bool {
         self.current >= self.source.len()
     }
 
+    /// If the expected char matches the actual char it will return true. The char
+    /// is consumed and we advance.
     fn is_match(&mut self, expected: char) -> bool {
         match self.source.get(self.current) {
             Some(ch) if *ch == expected => {

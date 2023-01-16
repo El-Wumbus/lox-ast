@@ -1,8 +1,19 @@
 // This is a comment
 (( )){} // Grouping stuff
 !*+=/=<> <= == // operator
+
 ("Multiline
 string")
 
 1243 // A Number
-1213.21 // A Numberc
+
+/* This is a block comment
+   these can span multiple lines.
+    /* They may also be nested if desired. */
+*/
+
+1213.21 // A Number
+
+/* WOw
+
+/* nested wow
