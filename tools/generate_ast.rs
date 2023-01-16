@@ -52,11 +52,32 @@ fn define_ast(output_dir: &String, base_name: &String, types: &[String]) -> io::
         });
     }
 
-    write!(file, "\npub enum {base_name} {{\n")?;
+    writeln!(file, "\npub enum {base_name} {{\n")?;
     for t in &tree_types {
         write!(file, "    {}({}),\n", t.base_class_name, t.class_name)?;
     }
-    write!(file, "}}\n\n")?;
+    writeln!(file, "}}\n")?;
+
+    writeln!(file, "impl {} {{\n", base_name)?;
+    writeln!(
+        file,
+        "    pub fn accept<T>(&self, {}_visitor: &dyn {}Visitor<T>) -> Result<T, LoxError>{{",
+        base_name.to_lowercase(),
+        base_name,
+    )?;
+    writeln!(file, "        match self {{")?;
+
+    for t in &tree_types {
+        writeln!(
+            file,
+            "            {}::{}(v) => v.accept({}_visitor),",
+            base_name,
+            t.base_class_name,
+            base_name.to_lowercase()
+        )?;
+    }
+
+    writeln!(file, "        }}\n    }}\n}}\n")?;
 
     for t in &tree_types {
         write!(file, "pub struct {} {{\n", t.class_name)?;
@@ -83,7 +104,7 @@ fn define_ast(output_dir: &String, base_name: &String, types: &[String]) -> io::
         write!(file, "impl {} {{\n", t.class_name)?;
         write!(
             file,
-            "    fn accept<T>(&self, visitor: &dyn {}Visitor<T>) -> Result<T, LoxError>{{\n",
+            "    pub fn accept<T>(&self, visitor: &dyn {}Visitor<T>) -> Result<T, LoxError>{{\n",
             base_name
         )?;
         write!(
