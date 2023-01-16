@@ -18,7 +18,7 @@ pub fn generate(output_dir: String) -> io::Result<()> {
         &vec![
             "Binary   : Box<Expr> left, Token operator, Box<Expr> right".to_string(),
             "Grouping : Box<Expr> expression".to_string(),
-            "Literal  : Object value".to_string(),
+            "Literal  : Option<Object> value".to_string(),
             "Unary    : Token operator, Box<Expr> right".to_string(),
         ],
     )?;
@@ -61,7 +61,7 @@ fn define_ast(output_dir: &String, base_name: &String, types: &[String]) -> io::
     for t in &tree_types {
         write!(file, "pub struct {} {{\n", t.class_name)?;
         for f in &t.fields {
-            write!(file, "    {},\n", f)?;
+            write!(file, "    pub {},\n", f)?;
         }
 
         write!(file, "}}\n\n")?;
