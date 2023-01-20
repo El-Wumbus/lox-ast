@@ -1,28 +1,26 @@
-use error::*;
-use tokens::*;
-use expr::*;
+use crate::error::*;
+use crate::expr::*;
 
-struct AstPrinter;
+pub struct AstPrinter;
 
 impl AstPrinter
 {
-    fn print(&self, expr: &Expr) -> Result<String, LoxError>
+    pub fn print(&self, expr: &Expr) -> Result<String, LoxError>
     {
         expr.accept(self)
  
     }
 
-    fn parenthisize(&self, name: &String, exprs: &[Box<Expr>]) -> Result<String, LoxError>
+    fn parenthesize(&self, name: &String, exprs: &[&Box<Expr>]) -> Result<String, LoxError>
     {
         let mut builder = format!("({name}");
 
         for expr in exprs
         {
-            builder = format!("{builder} {}", expr.accept(self))?;
+            builder = format!("{builder} {}", expr.accept(self)?);
         }
 
-        builder = format!("{builder})");
-        Ok(())
+        Ok(format!("{builder})"))
     }
 }
 
@@ -32,11 +30,11 @@ impl ExprVisitor<String> for AstPrinter
     {
         self.parenthesize(&expr.operator.lexeme,&[&expr.left, &expr.right])
     }
-    fn visit_grouping_expr(&self, expr: &BinaryExpr) -> Result<String, LoxError>
+    fn visit_grouping_expr(&self, expr: &GroupingExpr) -> Result<String, LoxError>
     {
         self.parenthesize(&"group".to_string(), &[&expr.expression])
     }
-    fn visit_literal_expr(&self, expr: &BinaryExpr) -> Result<String, LoxError>
+    fn visit_literal_expr(&self, expr: &LiteralExpr) -> Result<String, LoxError>
     {
         if let Some(value) = &expr.value {
             Ok(value.to_string())
@@ -47,8 +45,8 @@ impl ExprVisitor<String> for AstPrinter
         }
         // self.parenthesize(&expr.operator.lexeme,&[&expr.left, &expr.right])
     }
-    fn visit_unary_expr(&self, expr: &BinaryExpr) -> Result<String, LoxError>
+    fn visit_unary_expr(&self, expr: &UnaryExpr) -> Result<String, LoxError>
     {
-        self.parenthesize(&expr.operator.lexeme, &[expr.right])
+        self.parenthesize(&expr.operator.lexeme, &[&expr.right])
     }
 }

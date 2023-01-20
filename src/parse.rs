@@ -2,10 +2,10 @@ use crate::error::*;
 use crate::expr::*;
 use crate::tokens::*;
 
-pub struct Parser
+pub struct Parser<'a>
 {
     /// Our array of tokens. It's a like a string and the tokens are our characters.
-    tokens: Vec<Token>,
+    tokens: &'a Vec<Token>,
 
     /// Points to the next token waitig to be parsed.
     current: usize,
@@ -21,12 +21,25 @@ pub struct Parser
 /// factor       -> unary ( ( "/" | "*" ) unary )* ;
 /// unary        -> ( "!" | "-" ) unary | primary ;
 /// primary      -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
-impl Parser
+impl<'a> Parser<'a>
 {
-    pub fn new(tokens: Vec<Token>) -> Self { Self { tokens, current: 0 } }
+    /// Create a new parser
+    pub fn new(tokens: &'a Vec<Token>) -> Self { Self { tokens, current: 0 } }
+
+    /// Parses a single expression and returns it.
+    pub fn parse(&mut self) -> Option<Expr>
+    {
+        match self.expression() {
+            Ok(expr) => Some(expr),
+            Err(_) => None
+        }
+    }
 
     fn expression(&mut self) -> Result<Expr, LoxError> { self.eqaulity() }
 
+    /// The equality rule.
+    /// It matches an equality operator or anything of higher precedece.
+    /// Equality operators have the lowest precedence.
     fn eqaulity(&mut self) -> Result<Expr, LoxError>
     {
         let mut expr = self.comparison()?;
@@ -46,6 +59,8 @@ impl Parser
         Ok(expr)
     }
 
+    /// The comparison rule.
+    /// It matches a comparison operator or anything of higer precedence
     fn comparison(&mut self) -> Result<Expr, LoxError>
     {
         let mut expr = self.term()?;
@@ -69,6 +84,7 @@ impl Parser
         Ok(expr)
     }
 
+    /// It matches an additon or subtraction operator, or anything of higer precedence.
     fn term(&mut self) -> Result<Expr, LoxError>
     {
         let mut expr = self.factor()?;
@@ -87,6 +103,7 @@ impl Parser
         Ok(expr)
     }
 
+    /// It matches an multiplication or division operator, or anything of higer precedence.
     fn factor(&mut self) -> Result<Expr, LoxError>
     {
         let mut expr = self.unary()?;
@@ -105,6 +122,7 @@ impl Parser
         Ok(expr)
     }
 
+    /// It matches a unary operator or anything of higher precedence.
     fn unary(&mut self) -> Result<Expr, LoxError>
     {
         if self.is_match(&[TokenType::Bang, TokenType::Minus])
@@ -119,6 +137,14 @@ impl Parser
         Ok(self.primary()?)
     }
 
+    /// It matches a primary, the highest level of precedence. 
+    /// Primaries are as follows:
+    ///     NUMBERS
+    ///     STRINGS
+    ///     True
+    ///     False
+    ///     Nil
+    ///     (...)
     fn primary(&mut self) -> Result<Expr, LoxError>
     {
         if self.is_match(&[TokenType::False])
@@ -158,7 +184,7 @@ impl Parser
         }
         else
         {
-            Err(LoxError::error(0, "Failed primary parser".to_string()))
+            Err(LoxError::error(0, "Expect expression".to_string()))
         }
 
         // Err(LoxError::error(line, message))

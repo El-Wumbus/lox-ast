@@ -3,9 +3,12 @@ mod lexer;
 mod tokens;
 mod expr;
 mod parse;
+mod _ast_printer;
 
+use _ast_printer::AstPrinter;
 use error::*;
 use lexer::scanner::*;
+use parse::Parser;
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
 
@@ -52,9 +55,15 @@ fn run_prompt() {
 fn run(source: String) -> Result<(), LoxError> {
     let mut scanner = Scanner::new(source);
     let tokens = scanner.scan_tokens()?;
+    let mut parser = Parser::new(tokens);
 
-    for token in tokens {
-        println!("{:?}", token);
+    match parser.parse()
+    {
+        None => return Ok(()),
+        Some(expr) =>{
+            let printer = AstPrinter{};
+            println!("AST Printer:\n{}", printer.print(&expr)?)
+        }
     }
 
     Ok(())
