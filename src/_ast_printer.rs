@@ -5,13 +5,9 @@ pub struct AstPrinter;
 
 impl AstPrinter
 {
-    pub fn print(&self, expr: &Expr) -> Result<String, LoxError>
-    {
-        expr.accept(self)
- 
-    }
+    pub fn print(&self, expr: &Expr) -> Result<String, LoxError> { expr.accept(self) }
 
-    fn parenthesize(&self, name: &String, exprs: &[&Box<Expr>]) -> Result<String, LoxError>
+    fn parenthesize(&self, name: &String, exprs: &[&Expr]) -> Result<String, LoxError>
     {
         let mut builder = format!("({name}");
 
@@ -28,7 +24,7 @@ impl ExprVisitor<String> for AstPrinter
 {
     fn visit_binary_expr(&self, expr: &BinaryExpr) -> Result<String, LoxError>
     {
-        self.parenthesize(&expr.operator.lexeme,&[&expr.left, &expr.right])
+        self.parenthesize(&expr.operator.lexeme, &[&expr.left, &expr.right])
     }
     fn visit_grouping_expr(&self, expr: &GroupingExpr) -> Result<String, LoxError>
     {
@@ -36,7 +32,8 @@ impl ExprVisitor<String> for AstPrinter
     }
     fn visit_literal_expr(&self, expr: &LiteralExpr) -> Result<String, LoxError>
     {
-        if let Some(value) = &expr.value {
+        if let Some(value) = &expr.value
+        {
             Ok(value.to_string())
         }
         else

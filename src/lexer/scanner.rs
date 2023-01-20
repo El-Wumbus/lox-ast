@@ -1,7 +1,8 @@
+use crate::object::Object;
 use crate::{error::LoxError, tokens::*};
 use std::collections::HashMap;
-
-pub struct Scanner {
+pub struct Scanner
+{
     source: Vec<char>,
     tokens: Vec<Token>,
 
@@ -13,8 +14,10 @@ pub struct Scanner {
     keywords: HashMap<String, TokenType>,
 }
 
-impl Scanner {
-    pub fn new(source: String) -> Self {
+impl Scanner
+{
+    pub fn new(source: String) -> Self
+    {
         let keywords = HashMap::from([
             ("and".to_string(), TokenType::And),
             ("class".to_string(), TokenType::Class),
@@ -43,14 +46,19 @@ impl Scanner {
         }
     }
 
-    pub fn scan_tokens(&mut self) -> Result<&Vec<Token>, LoxError> {
+    pub fn scan_tokens(&mut self) -> Result<&Vec<Token>, LoxError>
+    {
         let mut had_error: Option<LoxError> = None;
 
-        while !self.is_at_end() {
+        while !self.is_at_end()
+        {
             self.start = self.current;
-            match self.scan_token() {
-                Ok(_) => {}
-                Err(x) => {
+            match self.scan_token()
+            {
+                Ok(_) =>
+                {}
+                Err(x) =>
+                {
                     x.report("".to_string());
                     had_error = Some(x);
                 }
@@ -60,17 +68,22 @@ impl Scanner {
         self.tokens.push(Token::eof(self.line));
 
         // If an error occurs, return the error
-        if let Some(e) = had_error {
+        if let Some(e) = had_error
+        {
             Err(e)
-        } else {
+        }
+        else
+        {
             Ok(&self.tokens)
         }
     }
 
-    fn scan_token(&mut self) -> Result<(), LoxError> {
+    fn scan_token(&mut self) -> Result<(), LoxError>
+    {
         let c = self.advance();
 
-        match c {
+        match c
+        {
             '(' => self.add_token(TokenType::LeftParen),
             ')' => self.add_token(TokenType::RightParen),
             '{' => self.add_token(TokenType::LeftBrace),
@@ -81,71 +94,101 @@ impl Scanner {
             '+' => self.add_token(TokenType::Plus),
             ';' => self.add_token(TokenType::Semicolon),
             '*' => self.add_token(TokenType::Star),
-            '!' => {
-                let tok = if self.is_match('=') {
+            '!' =>
+            {
+                let tok = if self.is_match('=')
+                {
                     TokenType::BangEqual
-                } else {
+                }
+                else
+                {
                     TokenType::Bang
                 };
                 self.add_token(tok);
             }
-            '=' => {
-                let tok = if self.is_match('=') {
+            '=' =>
+            {
+                let tok = if self.is_match('=')
+                {
                     TokenType::Equal
-                } else {
+                }
+                else
+                {
                     TokenType::Assign
                 };
                 self.add_token(tok);
             }
-            '<' => {
-                let tok = if self.is_match('=') {
+            '<' =>
+            {
+                let tok = if self.is_match('=')
+                {
                     TokenType::LessEqual
-                } else {
+                }
+                else
+                {
                     TokenType::Less
                 };
                 self.add_token(tok);
             }
-            '>' => {
-                let tok = if self.is_match('=') {
+            '>' =>
+            {
+                let tok = if self.is_match('=')
+                {
                     TokenType::GreaterEqual
-                } else {
+                }
+                else
+                {
                     TokenType::Greater
                 };
                 self.add_token(tok);
             }
-            '/' => {
-                if self.is_match('/') {
+            '/' =>
+            {
+                if self.is_match('/')
+                {
                     // A comment goes until the end of the line. So we ignore until then
-                    while let Some(ch) = self.peek() {
-                        if ch != '\n' {
+                    while let Some(ch) = self.peek()
+                    {
+                        if ch != '\n'
+                        {
                             self.advance();
-                        } else {
+                        }
+                        else
+                        {
                             break;
                         }
                     }
-                } else if self.is_match('*') {
+                }
+                else if self.is_match('*')
+                {
                     // Block comment start
                     self.scan_comment()?;
-                } else {
+                }
+                else
+                {
                     self.add_token(TokenType::Slash);
                 }
             }
-            ' ' | '\r' | '\t' => {
+            ' ' | '\r' | '\t' =>
+            {
                 // Ignore whitespace
             }
             '\n' => self.line += 1,
-            '"' => {
+            '"' =>
+            {
                 self.string()?;
             }
-            '0'..='9' => {
+            '0'..='9' =>
+            {
                 self.number();
             }
 
             _ if c.is_ascii_alphabetic() || c == '_' => self.identifier(),
-            _ => {
+            _ =>
+            {
                 return Err(LoxError::error(
                     self.line,
-                    format!("Unexpected character '{}'", c),
+                    format!("Unexpected character '{c}'"),
                 ))
             }
         }
@@ -153,81 +196,104 @@ impl Scanner {
     }
 
     /// A recursive function that scans for block comments and supports nesting
-    fn scan_comment(&mut self) -> Result<(), LoxError> {
-        loop {
-            match self.peek() {
+    fn scan_comment(&mut self) -> Result<(), LoxError>
+    {
+        loop
+        {
+            match self.peek()
+            {
                 // The end of the comment
-                Some('*') => {
+                Some('*') =>
+                {
                     self.advance();
-                    if self.is_match('/') {
+                    if self.is_match('/')
+                    {
                         return Ok(());
                     }
                 }
 
                 // The beginning of a new, nested comment.
-                Some('/') => {
+                Some('/') =>
+                {
                     self.advance();
                     // We just opened another comment, so we call .scan_comment on that block
                     // This allows for nested block comments
-                    if self.is_match('*') {
+                    if self.is_match('*')
+                    {
                         self.scan_comment()?;
                     }
                 }
 
                 // Handle our newlines
-                Some('\n') => {
+                Some('\n') =>
+                {
                     self.advance();
                     self.line += 1;
                 }
 
-                None => {
+                None =>
+                {
                     return Err(LoxError::error(
                         self.line,
                         "Unterminated block comment.".to_string(),
                     ))
                 }
-                _ => {
+                _ =>
+                {
                     self.advance();
                 }
             };
         }
     }
 
-    fn identifier(&mut self) {
-        while Scanner::is_alpha_numeric(self.peek()) {
+    fn identifier(&mut self)
+    {
+        while Scanner::is_alpha_numeric(self.peek())
+        {
             self.advance();
         }
         let text: String = self.source[self.start..self.current].iter().collect();
         let ttype;
 
         // If
-        if let Some(type_) = self.keywords.get(&text) {
+        if let Some(type_) = self.keywords.get(&text)
+        {
             ttype = *type_;
-        } else {
+        }
+        else
+        {
             ttype = TokenType::Identifier;
         }
 
         self.add_token(ttype);
     }
 
-    fn is_alpha_numeric(ch: Option<char>) -> bool {
-        if let Some(ch) = ch {
+    fn is_alpha_numeric(ch: Option<char>) -> bool
+    {
+        if let Some(ch) = ch
+        {
             ch.is_ascii_alphanumeric() || ch == '_'
-        } else {
+        }
+        else
+        {
             false
         }
     }
-    fn number(&mut self) {
+    fn number(&mut self)
+    {
         // Consume all integer digits
-        while Scanner::is_digit(self.peek()) {
+        while Scanner::is_digit(self.peek())
+        {
             self.advance();
         }
 
         // If a fractional part is present, and the next char is a digit, consume them.
-        if self.peek() == Some('.') && Scanner::is_digit(self.peek_next()) {
+        if self.peek() == Some('.') && Scanner::is_digit(self.peek_next())
+        {
             self.advance();
 
-            while Scanner::is_digit(self.peek()) {
+            while Scanner::is_digit(self.peek())
+            {
                 self.advance();
             }
         }
@@ -238,22 +304,27 @@ impl Scanner {
     }
 
     /// Peaks two chars ahead.
-    fn peek_next(&self) -> Option<char> {
-        self.source.get(self.current + 1).copied()
-    }
+    fn peek_next(&self) -> Option<char> { self.source.get(self.current + 1).copied() }
 
-    fn is_digit(ch: Option<char>) -> bool {
-        if let Some(ch) = ch {
+    fn is_digit(ch: Option<char>) -> bool
+    {
+        if let Some(ch) = ch
+        {
             ch.is_ascii_digit()
-        } else {
+        }
+        else
+        {
             false
         }
     }
 
-    fn string(&mut self) -> Result<(), LoxError> {
+    fn string(&mut self) -> Result<(), LoxError>
+    {
         // Consume chars until we find the ending quote
-        while let Some(ch) = self.peek() {
-            match ch {
+        while let Some(ch) = self.peek()
+        {
+            match ch
+            {
                 '"' => break,
                 '\n' => self.line += 1,
                 _ => (),
@@ -262,7 +333,8 @@ impl Scanner {
         }
 
         // If there is no ending quote then we complain
-        if self.is_at_end() {
+        if self.is_at_end()
+        {
             return Err(LoxError::error(
                 self.line,
                 "Unterminated String".to_string(),
@@ -280,24 +352,22 @@ impl Scanner {
         Ok(())
     }
     /// Like the `advance()` method, but doesn't consume chars.
-    fn peek(&self) -> Option<char> {
-        self.source.get(self.current).copied()
-    }
+    fn peek(&self) -> Option<char> { self.source.get(self.current).copied() }
 
     /// Consumes the next char in the source file, then returns it.
-    fn advance(&mut self) -> char {
+    fn advance(&mut self) -> char
+    {
         let result = self.source.get(self.current).unwrap();
         self.current += 1;
         *result
     }
 
     /// Appends a token with no literal.
-    fn add_token(&mut self, ttype: TokenType) {
-        self.add_token_object(ttype, None);
-    }
+    fn add_token(&mut self, ttype: TokenType) { self.add_token_object(ttype, None); }
 
     /// Appends a token.
-    fn add_token_object(&mut self, ttype: TokenType, literal: Option<Object>) {
+    fn add_token_object(&mut self, ttype: TokenType, literal: Option<Object>)
+    {
         // Get a char slice from the source, then turn it to an iterator. After this, collect
         // into a string
         let lexeme: String = self.source[self.start..self.current].iter().collect();
@@ -306,15 +376,16 @@ impl Scanner {
     }
 
     /// Returns true if we're at the end of the string.
-    fn is_at_end(&self) -> bool {
-        self.current >= self.source.len()
-    }
+    fn is_at_end(&self) -> bool { self.current >= self.source.len() }
 
     /// If the expected char matches the actual char it will return true. The char
     /// is consumed and we advance.
-    fn is_match(&mut self, expected: char) -> bool {
-        match self.source.get(self.current) {
-            Some(ch) if *ch == expected => {
+    fn is_match(&mut self, expected: char) -> bool
+    {
+        match self.source.get(self.current)
+        {
+            Some(ch) if *ch == expected =>
+            {
                 self.current += 1; // Increment
                 true
             }

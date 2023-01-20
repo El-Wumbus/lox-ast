@@ -1,5 +1,6 @@
 use crate::error::*;
 use crate::expr::*;
+use crate::object::Object;
 use crate::tokens::*;
 
 pub struct Parser<'a>
@@ -29,9 +30,10 @@ impl<'a> Parser<'a>
     /// Parses a single expression and returns it.
     pub fn parse(&mut self) -> Option<Expr>
     {
-        match self.expression() {
+        match self.expression()
+        {
             Ok(expr) => Some(expr),
-            Err(_) => None
+            Err(_) => None,
         }
     }
 
@@ -134,10 +136,10 @@ impl<'a> Parser<'a>
                 right: Box::new(right),
             }));
         }
-        Ok(self.primary()?)
+        self.primary()
     }
 
-    /// It matches a primary, the highest level of precedence. 
+    /// It matches a primary, the highest level of precedence.
     /// Primaries are as follows:
     ///     NUMBERS
     ///     STRINGS
@@ -149,27 +151,27 @@ impl<'a> Parser<'a>
     {
         if self.is_match(&[TokenType::False])
         {
-            return Ok(Expr::Literal(LiteralExpr {
+            Ok(Expr::Literal(LiteralExpr {
                 value: Some(Object::False),
-            }));
+            }))
         }
         else if self.is_match(&[TokenType::True])
         {
-            return Ok(Expr::Literal(LiteralExpr {
+            Ok(Expr::Literal(LiteralExpr {
                 value: Some(Object::True),
-            }));
+            }))
         }
         else if self.is_match(&[TokenType::Nil])
         {
-            return Ok(Expr::Literal(LiteralExpr {
+            Ok(Expr::Literal(LiteralExpr {
                 value: Some(Object::Nil),
-            }));
+            }))
         }
         else if self.is_match(&[TokenType::Number, TokenType::String])
         {
-            return Ok(Expr::Literal(LiteralExpr {
+            Ok(Expr::Literal(LiteralExpr {
                 value: self.previous().literal.clone(),
-            }));
+            }))
         }
         else if self.is_match(&[TokenType::LeftParen])
         {
@@ -178,9 +180,9 @@ impl<'a> Parser<'a>
                 TokenType::RightParen,
                 "Expect ')' after expression".to_string(),
             )?;
-            return Ok(Expr::Grouping(GroupingExpr {
+            Ok(Expr::Grouping(GroupingExpr {
                 expression: Box::new(expr),
-            }));
+            }))
         }
         else
         {
@@ -272,5 +274,5 @@ impl<'a> Parser<'a>
 
     fn peek(&self) -> &Token { self.tokens.get(self.current).unwrap() }
 
-    fn previous(&self) -> &Token { self.tokens.get(self.current - 1).unwrap()}
+    fn previous(&self) -> &Token { self.tokens.get(self.current - 1).unwrap() }
 }
