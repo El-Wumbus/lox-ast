@@ -1,6 +1,7 @@
 mod _ast_printer;
 mod error;
 mod expr;
+mod interpreter;
 mod lexer;
 mod object;
 mod parse;
