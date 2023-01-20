@@ -52,21 +52,6 @@ pub enum TokenType
     Eof,
 }
 
-impl std::fmt::Display for Object
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
-    {
-        match self
-        {
-            Self::Num(x) => write!(f, "{x}"),
-            Self::Str(x) => write!(f, "{x}"),
-            Self::Nil => write!(f, "nil"),
-            Self::True => write!(f, "true"),
-            Self::False => write!(f, "false"),
-        }
-    }
-}
-
 #[derive(Debug, PartialEq, Clone)]
 pub struct Token
 {
