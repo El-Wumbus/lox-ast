@@ -74,9 +74,9 @@ impl std::fmt::Display for Object {
 #[derive(Debug, PartialEq, Clone)]
 pub struct Token {
     ttype: TokenType,
-    lexeme: String,
-    literal: Option<Object>,
-    line: usize,
+    pub lexeme: String,
+    pub literal: Option<Object>,
+    pub line: usize,
 }
 
 impl Token {
@@ -89,6 +89,11 @@ impl Token {
         }
     }
 
+    pub fn is(&self, ttype: TokenType) -> bool
+    {
+        self.ttype == ttype
+    }
+
     pub fn eof(line: usize) -> Token {
         Token {
             ttype: TokenType::Eof,
@@ -96,6 +101,11 @@ impl Token {
             literal: None,
             line,
         }
+    }
+    
+    pub fn token_type(&self) -> TokenType
+    {
+        self.ttype.clone()
     }
 }
 

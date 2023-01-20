@@ -2,6 +2,8 @@ mod error;
 mod lexer;
 mod tokens;
 mod expr;
+mod parse;
+
 use error::*;
 use lexer::scanner::*;
 use std::env::args;
