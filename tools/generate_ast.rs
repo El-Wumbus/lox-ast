@@ -116,7 +116,8 @@ fn define_ast(output_dir: &String, base_name: &String, types: &[String]) -> io::
         writeln!(file, "impl {} {{", t.class_name)?;
         writeln!(
             file,
-            "    pub fn accept<T>(&self, visitor: &dyn {base_name}Visitor<T>) -> Result<T, LoxError>{{"
+            "    pub fn accept<T>(&self, visitor: &dyn {base_name}Visitor<T>) -> Result<T, \
+             LoxError>{{"
         )?;
         writeln!(
             file,

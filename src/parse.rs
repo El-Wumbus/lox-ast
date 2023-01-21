@@ -5,7 +5,8 @@ use crate::tokens::*;
 
 pub struct Parser<'a>
 {
-    /// Our array of tokens. It's a like a string and the tokens are our characters.
+    /// Our array of tokens. It's a like a string and the tokens are our
+    /// characters.
     tokens: &'a Vec<Token>,
 
     /// Points to the next token waitig to be parsed.
@@ -21,7 +22,8 @@ pub struct Parser<'a>
 /// term         -> factor ( ( "-" | "+" ) factor )* ;
 /// factor       -> unary ( ( "/" | "*" ) unary )* ;
 /// unary        -> ( "!" | "-" ) unary | primary ;
-/// primary      -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
+/// primary      -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression
+/// ")" ;
 impl<'a> Parser<'a>
 {
     /// Create a new parser
@@ -86,7 +88,8 @@ impl<'a> Parser<'a>
         Ok(expr)
     }
 
-    /// It matches an additon or subtraction operator, or anything of higer precedence.
+    /// It matches an additon or subtraction operator, or anything of higer
+    /// precedence.
     fn term(&mut self) -> Result<Expr, LoxError>
     {
         let mut expr = self.factor()?;
@@ -105,7 +108,8 @@ impl<'a> Parser<'a>
         Ok(expr)
     }
 
-    /// It matches an multiplication or division operator, or anything of higer precedence.
+    /// It matches an multiplication or division operator, or anything of higer
+    /// precedence.
     fn factor(&mut self) -> Result<Expr, LoxError>
     {
         let mut expr = self.unary()?;
@@ -152,13 +156,13 @@ impl<'a> Parser<'a>
         if self.is_match(&[TokenType::False])
         {
             Ok(Expr::Literal(LiteralExpr {
-                value: Some(Object::False),
+                value: Some(Object::Bool(false)),
             }))
         }
         else if self.is_match(&[TokenType::True])
         {
             Ok(Expr::Literal(LiteralExpr {
-                value: Some(Object::True),
+                value: Some(Object::Bool(true)),
             }))
         }
         else if self.is_match(&[TokenType::Nil])

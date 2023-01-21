@@ -22,24 +22,17 @@ impl ExprVisitor<Object> for Interpreter
 
         match expr.operator.token_type()
         {
-            TokenType::Minus => match right
+            TokenType::Minus =>
             {
-                Object::Num(n) => Ok(Object::Num(-n)),
-                _ => Ok(Object::Nil),
-            },
-            TokenType::Bang =>
-            {
-                if self.is_truthy(&right)
+                match right
                 {
-                    Ok(Object::False)
-                }
-                else
-                {
-                    Ok(Object::True)
+                    Object::Num(n) => Ok(Object::Num(-n)),
+                    _ => Ok(Object::Nil),
                 }
             }
+            TokenType::Bang => Ok(Object::Bool(self.is_truthy(&right))),
 
-            _ => Err(LoxError::error(0, "Unreachable error")),
+            _ => Err(LoxError::error(expr.operator.line, "Unreachable error")),
         }
     }
 }
@@ -51,6 +44,6 @@ impl Interpreter
     fn is_truthy(&self, object: &Object) -> bool
     {
         // `Nil` and `False` values are false, everything else is true
-        !matches!(object, Object::Nil | Object::False)
+        !matches!(object, Object::Nil | Object::Bool(false))
     }
 }

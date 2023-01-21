@@ -359,8 +359,8 @@ impl Scanner
     /// Appends a token.
     fn add_token_object(&mut self, ttype: TokenType, literal: Option<Object>)
     {
-        // Get a char slice from the source, then turn it to an iterator. After this, collect
-        // into a string
+        // Get a char slice from the source, then turn it to an iterator. After this,
+        // collect into a string
         let lexeme: String = self.source[self.start..self.current].iter().collect();
         self.tokens
             .push(Token::new(ttype, lexeme, literal, self.line))
@@ -369,8 +369,8 @@ impl Scanner
     /// Returns true if we're at the end of the string.
     fn is_at_end(&self) -> bool { self.current >= self.source.len() }
 
-    /// If the expected char matches the actual char it will return true. The char
-    /// is consumed and we advance.
+    /// If the expected char matches the actual char it will return true. The
+    /// char is consumed and we advance.
     fn is_match(&mut self, expected: char) -> bool
     {
         match self.source.get(self.current)
