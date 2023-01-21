@@ -10,27 +10,27 @@ pub struct LoxError
 
 impl LoxError
 {
-    pub fn error(line: usize, message: String) -> Self
+    pub fn error(line: usize, message: &str) -> Self
     {
         Self {
             line,
-            message,
+            message: message.to_string(),
             token: None,
         }
     }
 
-    pub fn parse_error(token: &Token, message: String) -> LoxError
+    pub fn parse_error(token: &Token, message: &str) -> LoxError
     {
         let err = LoxError {
             token: Some(token.clone()),
             line: token.line,
-            message,
+            message: message.to_string(),
         };
-        err.report("".to_string());
+        err.report("");
         err
     }
 
-    pub fn report(&self, loc: String)
+    pub fn report(&self, loc: &str)
     {
         if let Some(token) = self.token.clone()
         {

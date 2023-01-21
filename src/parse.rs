@@ -186,7 +186,7 @@ impl<'a> Parser<'a>
         }
         else
         {
-            Err(LoxError::error(0, "Expect expression".to_string()))
+            Err(LoxError::error(0, "Expect expression"))
         }
 
         // Err(LoxError::error(line, message))
@@ -205,7 +205,7 @@ impl<'a> Parser<'a>
         }
     }
 
-    fn error(token: &Token, message: String) -> LoxError { LoxError::parse_error(token, message) }
+    fn error(token: &Token, message: String) -> LoxError { LoxError::parse_error(token, &message) }
 
     fn synchronize(&mut self)
     {

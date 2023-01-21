@@ -39,7 +39,7 @@ impl ExprVisitor<Object> for Interpreter
                 }
             }
 
-            _ => Err(LoxError::error(0, "Unreachable error".to_string())),
+            _ => Err(LoxError::error(0, "Unreachable error")),
         }
     }
 }
