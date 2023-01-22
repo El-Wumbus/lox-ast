@@ -1,6 +1,6 @@
 // use crate::_ast_printer::AstPrinter;
 use crate::error::*;
-use crate::interpreter::*;
+use crate::interpreter::interpreter::*;
 use crate::lexer::*;
 use crate::parse::Parser;
 use std::io::{self, stdout, BufRead, Write};
@@ -15,7 +15,7 @@ impl Lox
     pub fn new() -> Self
     {
         Self {
-            interpreter: Interpreter {},
+            interpreter: Interpreter::new(),
         }
     }
 

@@ -41,12 +41,8 @@ pub fn generate(output_dir: &str) -> io::Result<()>
     Ok(())
 }
 
-fn define_ast(
-    output_dir: &str,
-    base_name: &str,
-    imports: &[&str],
-    types: &[&str],
-) -> io::Result<()>
+fn define_ast(output_dir: &str, base_name: &str, imports: &[&str], types: &[&str])
+    -> io::Result<()>
 {
     let path = PathBuf::from(output_dir).join(format!("{}.rs", base_name.to_lowercase()));
     let mut file = File::create(path)?;
