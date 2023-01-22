@@ -70,6 +70,9 @@ impl Add for Object
         {
             (Object::Num(left), Object::Num(right)) => Self::Num(left + right),
             (Object::Str(left), Object::Str(right)) => Self::Str(format!("{left}{right}")),
+            (Object::Num(left), Object::Str(right)) => Self::Str(format!("{left}{right}")),
+            (Object::Str(left), Object::Num(right)) => Self::Str(format!("{left}{right}")),
+
             _ => Object::ArithmeticError,
         }
     }
