@@ -1,5 +1,6 @@
 use crate::error::*;
 use crate::expr::*;
+use crate::lox::Lox;
 use crate::object::*;
 use crate::stmt::*;
 use crate::tokens::*;
@@ -37,12 +38,31 @@ impl<'a> Parser<'a>
 
         while !self.is_at_end()
         {
-            statements.push(self.statement()?)
+            statements.push(self.declaration()?)
         }
         Ok(statements)
     }
 
     fn expression(&mut self) -> Result<Expr, LoxError> { self.eqaulity() }
+
+    fn declaration(&mut self) -> Result<Stmt, LoxError>
+    {
+        let res = if self.is_match(&[TokenType::Var])
+        {
+            self.var_declaration()
+        }
+        else
+        {
+            self.statement()
+        };
+
+        if res.is_err()
+        {
+            self.synchronize();
+        }
+        res
+    }
+
 
     fn statement(&mut self) -> Result<Stmt, LoxError>
     {
@@ -57,14 +77,35 @@ impl<'a> Parser<'a>
     fn print_statement(&mut self) -> Result<Stmt, LoxError>
     {
         let value = self.expression()?;
-        self.consume(TokenType::Semicolon, "Expect ';' after value.".to_string())?;
+        self.consume(TokenType::Semicolon, "Expect ';' after value.")?;
         Ok(Stmt::Print(PrintStmt { expression: value }))
+    }
+
+    fn var_declaration(&mut self) -> Result<Stmt, LoxError>
+    {
+        let name = self.consume(TokenType::Identifier, "Expected variable name")?;
+
+        let initializer = if self.is_match(&[TokenType::Assign])
+        {
+            Some(self.expression()?)
+        }
+        else
+        {
+            None
+        };
+
+        self.consume(
+            TokenType::Semicolon,
+            "Expected ';' after variable decalaration.",
+        );
+
+        Ok(Stmt::Var(VarStmt { name, initializer }))
     }
 
     fn expression_statement(&mut self) -> Result<Stmt, LoxError>
     {
         let expr = self.expression()?;
-        self.consume(TokenType::Semicolon, "Expect ';' after value.".to_string())?;
+        self.consume(TokenType::Semicolon, "Expect ';' after value.")?;
         Ok(Stmt::Expression(ExpressionStmt { expression: expr }))
     }
 
@@ -207,12 +248,15 @@ impl<'a> Parser<'a>
         else if self.is_match(&[TokenType::LeftParen])
         {
             let expr = self.expression()?;
-            self.consume(
-                TokenType::RightParen,
-                "Expect ')' after expression".to_string(),
-            )?;
+            self.consume(TokenType::RightParen, "Expect ')' after expression")?;
             Ok(Expr::Grouping(GroupingExpr {
                 expression: Box::new(expr),
+            }))
+        }
+        else if self.is_match(&[TokenType::Identifier])
+        {
+            Ok(Expr::Variable(VariableExpr {
+                name: self.previous().clone(),
             }))
         }
         else
@@ -223,7 +267,7 @@ impl<'a> Parser<'a>
         // Err(LoxError::error(line, message))
     }
 
-    fn consume(&mut self, ttype: TokenType, message: String) -> Result<Token, LoxError>
+    fn consume(&mut self, ttype: TokenType, message: &str) -> Result<Token, LoxError>
     {
         if self.check(ttype)
         {
@@ -232,7 +276,7 @@ impl<'a> Parser<'a>
         else
         {
             let _p = self.peek();
-            Err(Parser::error(self.peek(), message))
+            Err(Parser::error(self.peek(), message.to_string()))
         }
     }
 
