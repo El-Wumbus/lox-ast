@@ -9,7 +9,7 @@ mod tokens;
 
 use _ast_printer::AstPrinter;
 use error::*;
-use lexer::scanner::*;
+use lexer::*;
 use parse::Parser;
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
