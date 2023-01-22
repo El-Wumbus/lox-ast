@@ -1,6 +1,5 @@
 use crate::error::*;
 use crate::expr::*;
-use crate::lox::Lox;
 use crate::object::*;
 use crate::stmt::*;
 use crate::tokens::*;
@@ -97,7 +96,7 @@ impl<'a> Parser<'a>
         self.consume(
             TokenType::Semicolon,
             "Expected ';' after variable decalaration.",
-        );
+        )?;
 
         Ok(Stmt::Var(VarStmt { name, initializer }))
     }
