@@ -24,7 +24,7 @@ impl StmtVisitor<()> for Interpreter
         Ok(())
     }
 
-    fn visit_var_stmt(&self, expr: &crate::stmt::VarStmt) -> Result<(), LoxError> { Ok(()) }
+    fn visit_var_stmt(&self, _expr: &crate::stmt::VarStmt) -> Result<(), LoxError> { Ok(()) }
 }
 
 impl ExprVisitor<Object> for Interpreter
@@ -92,7 +92,7 @@ impl ExprVisitor<Object> for Interpreter
         }
     }
 
-    fn visit_variable_expr(&self, expr: &VariableExpr) -> Result<Object, LoxError> { Ok(Object::Nil)}
+    fn visit_variable_expr(&self, _expr: &VariableExpr) -> Result<Object, LoxError> { Ok(Object::Nil)}
 }
 
 impl Interpreter

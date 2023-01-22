@@ -12,10 +12,10 @@ struct TreeType
     fields: Vec<String>,
 }
 
-pub fn generate(output_dir: String) -> io::Result<()>
+pub fn generate(output_dir: &str) -> io::Result<()>
 {
     define_ast(
-        &output_dir,
+        output_dir,
         "Expr",
         &["error", "tokens", "object"],
         &[
@@ -28,7 +28,7 @@ pub fn generate(output_dir: String) -> io::Result<()>
     )?;
 
     define_ast(
-        &output_dir,
+        output_dir,
         "Stmt",
         &["error", "expr", "tokens"],
         &[
@@ -42,7 +42,7 @@ pub fn generate(output_dir: String) -> io::Result<()>
 }
 
 fn define_ast(
-    output_dir: &String,
+    output_dir: &str,
     base_name: &str,
     imports: &[&str],
     types: &[&str],

@@ -4,6 +4,6 @@ use tools::generate_ast::generate;
 
 fn main() -> io::Result<()>
 {
-    generate("src".to_string())?;
+    generate("src")?;
     Ok(())
 }
