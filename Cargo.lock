@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "unnamed_programming_language"
+name = "lox"
 version = "0.1.0"

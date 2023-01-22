@@ -20,16 +20,16 @@ impl ExprVisitor<Object> for Interpreter
             TokenType::Slash => left / right,
             TokenType::Star => left * right,
             TokenType::Plus => left + right,
-            TokenType::Greater => Object::Bool(left > right),
-            TokenType::GreaterEqual => Object::Bool(left >= right),
-            TokenType::Less => Object::Bool(left < right),
-            TokenType::LessEqual => Object::Bool(left <= right),
-            TokenType::BangEqual => Object::Bool(left != right),
-            TokenType::Equal => Object::Bool(left == right),
+            TokenType::Greater => left.greater(right),
+            TokenType::GreaterEqual => left.greater_eq(right),
+            TokenType::Less => left.less(right),
+            TokenType::LessEqual => left.less_eq(right),
+            TokenType::BangEqual => left.neq(right),
+            TokenType::Equal => left.eq(right),
             _ => todo!(),
         };
 
-        if res == Object::ArithmeticError
+        if res == Object::ArithmeticError || res == Object::ComparisonError
         {
             Err(LoxError::runtime_error(
                 &expr.operator,
@@ -81,6 +81,7 @@ impl Interpreter
 
 
 #[cfg(test)]
+// TODO: Test every possible case
 mod tests
 {
     use super::*;
@@ -224,23 +225,23 @@ mod tests
         assert!(res.is_err());
     }
 
-    // #[test]
-    // /// Test that an arithmetic error is thrown when trying to do operations on
-    // /// differing types
-    // fn test_error_cmp()
-    // {
-    //     let i = Interpreter {};
+    #[test]
+    /// Test that an comparison error is thrown when trying to compare differing
+    /// types
+    fn test_error_cmp()
+    {
+        let i = Interpreter {};
 
-    //     let binary_expr = BinaryExpr {
-    //         left: make_literal(Object::Num(15.0)),
-    //         operator: Token::new(TokenType::Greater, ">".to_string(), None, 0),
-    //         right: make_literal(Object::Bool(true)),
-    //     };
+        let binary_expr = BinaryExpr {
+            left: make_literal(Object::Num(15.0)),
+            operator: Token::new(TokenType::Greater, ">".to_string(), None, 0),
+            right: make_literal(Object::Bool(true)),
+        };
 
-    //     let res = i.visit_binary_expr(&binary_expr);
+        let res = i.visit_binary_expr(&binary_expr);
 
-    //     assert!(res.is_err());
-    // }
+        assert!(res.is_err());
+    }
 
     #[test]
     /// Test binary greater-than (15 > 10)
@@ -441,6 +442,24 @@ mod tests
 
         assert_eq!(res, Object::Bool(true));
     }
+
+    #[test]
+    /// Test binary doesn't equal ("Hello" != "Hello")
+    fn test_binary_bang_equal_str()
+    {
+        let i = Interpreter {};
+
+        let binary_expr = BinaryExpr {
+            left: make_literal(Object::Str("Hello".to_string())),
+            operator: Token::new(TokenType::BangEqual, "!=".to_string(), None, 0),
+            right: make_literal(Object::Str("Hello World".to_string())),
+        };
+
+        let res = i.visit_binary_expr(&binary_expr).unwrap();
+
+        assert_eq!(res, Object::Bool(true));
+    }
+
 
     #[test]
     /// Test binary equals (nil == nil)
