@@ -1,17 +1,3 @@
-// This is a comment
-(( )){} // Grouping stuff
-!*+=/=<> <= == // operator
-
-("Multiline
-string")
-
-1243 // A Number
-
-/* This is a block comment
-   these can span multiple lines.
-    /* They may also be nested if desired. */
-*/
-
-1213.21 // A Number
-
-45 + 64 * (9+5) / 23
+print "One";
+print true;
+print 2 + 1 * 2 / (9 * 0 + 2 * 3);

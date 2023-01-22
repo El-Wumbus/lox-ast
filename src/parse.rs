@@ -1,6 +1,7 @@
 use crate::error::*;
 use crate::expr::*;
-use crate::object::Object;
+use crate::object::*;
+use crate::stmt::*;
 use crate::tokens::*;
 
 pub struct Parser<'a>
@@ -30,16 +31,42 @@ impl<'a> Parser<'a>
     pub fn new(tokens: &'a Vec<Token>) -> Self { Self { tokens, current: 0 } }
 
     /// Parses a single expression and returns it.
-    pub fn parse(&mut self) -> Option<Expr>
+    pub fn parse(&mut self) -> Result<Vec<Stmt>, LoxError>
     {
-        match self.expression()
+        let mut statements = Vec::new();
+
+        while !self.is_at_end()
         {
-            Ok(expr) => Some(expr),
-            Err(_) => None,
+            statements.push(self.statement()?)
         }
+        Ok(statements)
     }
 
     fn expression(&mut self) -> Result<Expr, LoxError> { self.eqaulity() }
+
+    fn statement(&mut self) -> Result<Stmt, LoxError>
+    {
+        if self.is_match(&[TokenType::Print])
+        {
+            return self.print_statement();
+        }
+
+        self.expression_statement()
+    }
+
+    fn print_statement(&mut self) -> Result<Stmt, LoxError>
+    {
+        let value = self.expression()?;
+        self.consume(TokenType::Semicolon, "Expect ';' after value.".to_string())?;
+        Ok(Stmt::Print(PrintStmt { expression: value }))
+    }
+
+    fn expression_statement(&mut self) -> Result<Stmt, LoxError>
+    {
+        let expr = self.expression()?;
+        self.consume(TokenType::Semicolon, "Expect ';' after value.".to_string())?;
+        Ok(Stmt::Expression(ExpressionStmt { expression: expr }))
+    }
 
     /// The equality rule.
     /// It matches an equality operator or anything of higher precedece.

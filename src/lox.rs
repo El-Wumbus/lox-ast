@@ -60,19 +60,15 @@ impl Lox
         let mut scanner = Scanner::new(source);
         let tokens = scanner.scan_tokens()?;
         let mut parser = Parser::new(tokens);
+        let statements = parser.parse()?;
 
-
-        match parser.parse()
+        if self.interpreter.interpret(&statements)
         {
-            None => return Ok(()),
-            Some(expr) =>
-            {
-                self.interpreter.interpret(&expr);
-                // let printer = AstPrinter {};
-                // println!("AST Printer:\n{}", printer.print(&expr)?)
-            }
+            Ok(())
         }
-
-        Ok(())
+        else
+        {
+            Err(LoxError::error(0, ""))
+        }
     }
 }
