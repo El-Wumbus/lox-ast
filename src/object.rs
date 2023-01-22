@@ -1,4 +1,4 @@
-use std::ops::{Sub, Div, Add, Mul};
+use std::ops::{Add, Div, Mul, Sub};
 
 #[derive(Debug, PartialEq, Clone, PartialOrd)]
 #[allow(dead_code)]
@@ -39,7 +39,6 @@ impl Div for Object
             _ => Object::ArithmeticError,
         }
     }
-
 }
 
 impl Mul for Object
@@ -55,7 +54,6 @@ impl Mul for Object
             _ => Object::ArithmeticError,
         }
     }
-
 }
 
 impl Add for Object
@@ -100,7 +98,7 @@ impl std::fmt::Display for Object
             Self::Num(x) => write!(f, "{x}"),
             Self::Bool(x) => write!(f, "{x}"),
             Self::Str(x) => write!(f, "{x}"),
-            ArithmeticError => panic!("Shouldn't be trying to print erronious Objects"),
+            Self::ArithmeticError => panic!("Shouldn't be trying to print erronious Objects"),
         }
     }
 }
