@@ -77,6 +77,23 @@ impl Interpreter
         // `Nil` and `False` values are false, everything else is true
         !matches!(object, Object::Nil | Object::Bool(false))
     }
+
+    pub fn interpret(&self, expr: &Expr) -> bool
+    {
+        match self.evaluate(expr)
+        {
+            Ok(v) =>
+            {
+                println!("{v}");
+                true
+            }
+            Err(e) =>
+            {
+                e.report("");
+                false
+            }
+        }
+    }
 }
 
 
