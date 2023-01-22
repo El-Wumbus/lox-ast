@@ -31,7 +31,10 @@ impl ExprVisitor<Object> for Interpreter
 
         if res == Object::ArithmeticError
         {
-            Err(LoxError::error(expr.operator.line, "Illegal expression"))
+            Err(LoxError::runtime_error(
+                &expr.operator,
+                "Illegal expression",
+            ))
         }
         else
         {
@@ -220,6 +223,24 @@ mod tests
 
         assert!(res.is_err());
     }
+
+    // #[test]
+    // /// Test that an arithmetic error is thrown when trying to do operations on
+    // /// differing types
+    // fn test_error_cmp()
+    // {
+    //     let i = Interpreter {};
+
+    //     let binary_expr = BinaryExpr {
+    //         left: make_literal(Object::Num(15.0)),
+    //         operator: Token::new(TokenType::Greater, ">".to_string(), None, 0),
+    //         right: make_literal(Object::Bool(true)),
+    //     };
+
+    //     let res = i.visit_binary_expr(&binary_expr);
+
+    //     assert!(res.is_err());
+    // }
 
     #[test]
     /// Test binary greater-than (15 > 10)

@@ -1,7 +1,7 @@
 use std::ops::{Add, Div, Mul, Sub};
 
 #[derive(Debug, PartialEq, Clone, PartialOrd)]
-#[allow(dead_code)]
+// TODO: Emit errors on invalid comparison
 pub enum Object
 {
     Num(f64),
