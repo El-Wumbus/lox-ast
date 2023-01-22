@@ -17,6 +17,7 @@ pub fn generate(output_dir: String) -> io::Result<()>
     define_ast(
         &output_dir,
         &"Expr".to_string(),
+        &["error", "tokens", "object"],
         &[
             "Binary   : Box<Expr> left, Token operator, Box<Expr> right".to_string(),
             "Grouping : Box<Expr> expression".to_string(),
@@ -25,18 +26,35 @@ pub fn generate(output_dir: String) -> io::Result<()>
         ],
     )?;
 
+    define_ast(
+        &output_dir,
+        &"Stmt".to_string(),
+        &["error", "expr"],
+        &[
+            "Expression : Expr expression".to_string(),
+            "Print      : Expr expression".to_string(),
+        ],
+    )?;
+
     Ok(())
 }
 
-fn define_ast(output_dir: &String, base_name: &String, types: &[String]) -> io::Result<()>
+fn define_ast(
+    output_dir: &String,
+    base_name: &String,
+    imports: &[&str],
+    types: &[String],
+) -> io::Result<()>
 {
     let path = PathBuf::from(output_dir).join(format!("{}.rs", base_name.to_lowercase()));
     let mut file = File::create(path)?;
     let mut tree_types = Vec::new();
 
-    writeln!(file, "use crate::error::*;")?;
-    writeln!(file, "use crate::tokens::*;")?;
-    writeln!(file, "use crate::object::Object;")?;
+    // Write imports to file
+    for import in imports
+    {
+        writeln!(file, "use crate::{import}::*;")?;
+    }
 
     for ttype in types
     {

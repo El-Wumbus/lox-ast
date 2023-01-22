@@ -6,7 +6,9 @@ mod lexer;
 mod lox;
 mod object;
 mod parse;
+mod stmt;
 mod tokens;
+
 use lox::Lox;
 use std::env::args;
 
