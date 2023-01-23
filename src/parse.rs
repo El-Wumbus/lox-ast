@@ -14,17 +14,18 @@ pub struct Parser<'a>
     current: usize,
 }
 
-/// The parser implements funtions that match the grammar rules of lox.
-/// The rules are as follows
-///
-/// expression  -> equality ;
-/// equality    -> comparison ( ( "!=" | "==") comparison )* ;
-/// comparison  -> term ( ( ">" | ">=" | "<" | "<=" ) term)* ;
-/// term         -> factor ( ( "-" | "+" ) factor )* ;
-/// factor       -> unary ( ( "/" | "*" ) unary )* ;
-/// unary        -> ( "!" | "-" ) unary | primary ;
-/// primary      -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression
-/// ")" ;
+/// The parser implements funtions that match the grammar rules of lox. The
+/// parser generates an AST.
+// The rules are as follows
+//
+// expression  -> equality ;
+// equality    -> comparison ( ( "!=" | "==") comparison )* ;
+// comparison  -> term ( ( ">" | ">=" | "<" | "<=" ) term)* ;
+// term         -> factor ( ( "-" | "+" ) factor )* ;
+// factor       -> unary ( ( "/" | "*" ) unary )* ;
+// unary        -> ( "!" | "-" ) unary | primary ;
+// primary      -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression
+// ")" ;
 impl<'a> Parser<'a>
 {
     /// Create a new parser

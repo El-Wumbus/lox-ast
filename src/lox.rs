@@ -19,6 +19,7 @@ impl Lox
         }
     }
 
+    /// Open a file and interpret its contents.
     pub fn run_file(&self, path: &String) -> io::Result<()>
     {
         let buf = std::fs::read_to_string(path)?;
@@ -30,6 +31,7 @@ impl Lox
         Ok(())
     }
 
+    /// Open a REPL (Read-Eval-Print loop) interactive programming environment.
     pub fn run_prompt(&self)
     {
         let stdin = io::stdin();

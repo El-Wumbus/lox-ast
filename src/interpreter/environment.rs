@@ -1,6 +1,8 @@
 use crate::{error::LoxError, object::Object, tokens::Token};
 use std::collections::HashMap;
 
+/// An `Environment` contains variable's identifiers and their associated
+/// values.
 pub struct Environment
 {
     values: HashMap<String, Object>,
@@ -8,6 +10,7 @@ pub struct Environment
 
 impl Environment
 {
+    /// Create a new `Environment`
     pub fn new() -> Self
     {
         Environment {
@@ -15,8 +18,10 @@ impl Environment
         }
     }
 
+    /// Define a new variable in the envrionment
     pub fn define(&mut self, name: String, value: Object) { self.values.insert(name, value); }
 
+    /// Get a variable's value from the environment
     pub fn get(&self, name: Token) -> Result<Object, LoxError>
     {
         if let Some(o) = self.values.get(&name.lexeme)

@@ -5,12 +5,21 @@ use std::ops::{Add, Div, Mul, Sub};
 /// (Number, String, Boolean, and Nil (NULL)) accompanied by two error types.
 pub enum Object
 {
+    /// A number
     Num(f64),
+
+    /// A string
     Str(String),
+
+    /// A boolean value
     Bool(bool),
+
+    /// Nothing (like None or NULL)
     Nil,
+
     /// Tried to do an operation on incompatable types
     ArithmeticError,
+
     /// Tried to compare incomparable types
     ComparisonError,
 }
@@ -115,7 +124,7 @@ impl std::fmt::Display for Object
 
 impl Object
 {
-    /// Test if `left` is greater-than `right`
+    /// Test if `self` is greater-than `right`
     pub fn greater(&self, right: Object) -> Self
     {
         match (self, right)
@@ -125,7 +134,7 @@ impl Object
         }
     }
 
-    /// Test if `left` is greater-than, or equal-to `right`
+    /// Test if `self` is greater-than, or equal-to `right`
     pub fn greater_eq(&self, right: Object) -> Self
     {
         match (self, right)
@@ -135,7 +144,7 @@ impl Object
         }
     }
 
-    /// Test if `left` is less-than `right`
+    /// Test if `self` is less-than `right`
     pub fn less(&self, right: Object) -> Self
     {
         match (self, right)
@@ -145,7 +154,7 @@ impl Object
         }
     }
 
-    /// Test if `left` is less-than, or equal-to `right`
+    /// Test if `self` is less-than, or equal-to `right`
     pub fn less_eq(&self, right: Object) -> Self
     {
         match (self, right)
@@ -155,7 +164,7 @@ impl Object
         }
     }
 
-    /// Test if `left` and `right` are equal
+    /// Test if `self` and `right` are equal
     pub fn eq(&self, right: Object) -> Self
     {
         match (self, right)
@@ -170,7 +179,7 @@ impl Object
         }
     }
 
-    /// Test if `left` and `right` aren't equal
+    /// Test if `self` and `right` aren't equal
     pub fn neq(&self, right: Object) -> Self
     {
         match (self, right)

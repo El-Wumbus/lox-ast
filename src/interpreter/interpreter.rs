@@ -586,7 +586,7 @@ mod tests
         let e = i.environment.borrow();
         assert_eq!(e.get(name).unwrap(), Object::Num(23.0))
     }
-    
+
     #[test]
     fn test_undefined_var_stmt()
     {
@@ -597,7 +597,7 @@ mod tests
             initializer: None,
         };
         i.visit_var_stmt(&var_stmt).unwrap();
-        
+
         // Create a let binding so it doesn't drop
         let e = i.environment.borrow();
         assert_eq!(e.get(name).unwrap(), Object::Nil)
@@ -614,9 +614,7 @@ mod tests
         };
         i.visit_var_stmt(&var_stmt).unwrap();
 
-        let var_expr = VariableExpr {
-            name,
-        };
+        let var_expr = VariableExpr { name };
 
         assert_eq!(i.visit_variable_expr(&var_expr).unwrap(), Object::Num(23.0))
     }
@@ -626,9 +624,7 @@ mod tests
     {
         let i = Interpreter::new();
         let name = Token::new(TokenType::Identifier, "foo".to_string(), None, 0);
-        let var_expr = VariableExpr {
-            name,
-        };
+        let var_expr = VariableExpr { name };
 
         assert!(i.visit_variable_expr(&var_expr).is_err())
     }

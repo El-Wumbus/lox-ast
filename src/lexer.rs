@@ -3,19 +3,28 @@ use crate::{error::LoxError, tokens::*};
 use std::collections::HashMap;
 pub struct Scanner
 {
+    /// The source document as a vector of chars as to allow for easy iteration
     source: Vec<char>,
+
+    /// The resulting tokens as a vector
     tokens: Vec<Token>,
 
     // Offsets that index into the string
     start: usize,
+
+    /// The current offset into the string
     current: usize,
 
+    /// The current line in the source
     line: usize,
+
+    /// All the reserved keywords
     keywords: HashMap<String, TokenType>,
 }
 
 impl Scanner
 {
+    /// Create a new `Scanner`
     pub fn new(source: String) -> Self
     {
         let keywords = HashMap::from([

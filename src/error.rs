@@ -1,15 +1,22 @@
 use crate::tokens::*;
 
 #[derive(Debug, PartialEq, Clone)]
+/// Contains information used for error reporting
 pub struct LoxError
 {
+    /// The token that relates to the error
     token: Option<Token>,
+
+    /// The line the error occurred on
     line: usize,
+
+    /// The error message
     message: String,
 }
 
 impl LoxError
 {
+    /// Create a `LoxError`
     pub fn error(line: usize, message: &str) -> Self
     {
         Self {
@@ -19,6 +26,7 @@ impl LoxError
         }
     }
 
+    /// Create a `LoxError` at parsing time
     pub fn parse_error(token: &Token, message: &str) -> LoxError
     {
         let err = LoxError {
@@ -30,6 +38,7 @@ impl LoxError
         err
     }
 
+    /// Create a `LoxError` at runtime
     pub fn runtime_error(token: &Token, message: &str) -> LoxError
     {
         let err = LoxError {
@@ -41,6 +50,7 @@ impl LoxError
         err
     }
 
+    /// Print the error
     pub fn report(&self, loc: &str)
     {
         if let Some(token) = self.token.clone()
