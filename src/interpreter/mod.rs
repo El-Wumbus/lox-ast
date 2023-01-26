@@ -150,17 +150,14 @@ impl Interpreter
 
     pub fn interpret(&self, statements: &[Stmt]) -> bool
     {
-        let mut success = true;
         for statement in statements
         {
-            if let Err(e) = self.execute(statement)
+            if self.execute(statement).is_err()
             {
-                e.report("");
-                success = false;
-                break;
+                return false;
             }
         }
-        success
+        true
     }
 
     fn execute(&self, stmt: &Stmt) -> Result<(), LoxError> { stmt.accept(self) }

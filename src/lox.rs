@@ -66,13 +66,11 @@ impl Lox
 
         let statements = parser.parse()?;
 
-        if parser.success() && self.interpreter.interpret(&statements)
+        if parser.success()
         {
-            Ok(())
+            self.interpreter.interpret(&statements);
         }
-        else
-        {
-            Err(LoxError::error(0, ""))
-        }
+
+        Ok(())
     }
 }

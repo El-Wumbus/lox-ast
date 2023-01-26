@@ -19,11 +19,13 @@ impl LoxError
     /// Create a `LoxError`
     pub fn error(line: usize, message: &str) -> Self
     {
-        Self {
+        let e = Self {
             line,
             message: message.to_string(),
             token: None,
-        }
+        };
+        e.report("");
+        e
     }
 
     /// Create a `LoxError` at parsing time
