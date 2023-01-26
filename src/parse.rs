@@ -12,24 +12,26 @@ pub struct Parser<'a>
 
     /// Points to the next token waitig to be parsed.
     current: usize,
+
+    /// Is true if an error has occurred
+    had_error: bool,
 }
 
 /// The parser implements funtions that match the grammar rules of lox. The
 /// parser generates an AST.
-// The rules are as follows
-//
-// expression  -> equality ;
-// equality    -> comparison ( ( "!=" | "==") comparison )* ;
-// comparison  -> term ( ( ">" | ">=" | "<" | "<=" ) term)* ;
-// term         -> factor ( ( "-" | "+" ) factor )* ;
-// factor       -> unary ( ( "/" | "*" ) unary )* ;
-// unary        -> ( "!" | "-" ) unary | primary ;
-// primary      -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression
-// ")" ;
 impl<'a> Parser<'a>
 {
     /// Create a new parser
-    pub fn new(tokens: &'a Vec<Token>) -> Self { Self { tokens, current: 0 } }
+    pub fn new(tokens: &'a Vec<Token>) -> Self
+    {
+        Self {
+            tokens,
+            current: 0,
+            had_error: false,
+        }
+    }
+
+    pub fn success(&self) -> bool { !self.had_error }
 
     /// Parses a single expression and returns it.
     pub fn parse(&mut self) -> Result<Vec<Stmt>, LoxError>
@@ -43,7 +45,29 @@ impl<'a> Parser<'a>
         Ok(statements)
     }
 
-    fn expression(&mut self) -> Result<Expr, LoxError> { self.eqaulity() }
+    fn expression(&mut self) -> Result<Expr, LoxError> { self.assignment() }
+
+    fn assignment(&mut self) -> Result<Expr, LoxError>
+    {
+        let expr = self.eqaulity()?;
+
+        if self.is_match(&[TokenType::Assign])
+        {
+            let equals = self.previous().clone();
+            let value = self.assignment()?;
+
+            if let Expr::Variable(expr) = expr
+            {
+                return Ok(Expr::Assign(AssignExpr {
+                    name: expr.name,
+                    value: Box::new(value),
+                }));
+            }
+            self.error(&equals, "Invalid assignment target.".to_string())
+                .report("");
+        }
+        Ok(expr)
+    }
 
     fn declaration(&mut self) -> Result<Stmt, LoxError>
     {
@@ -276,11 +300,15 @@ impl<'a> Parser<'a>
         else
         {
             let _p = self.peek();
-            Err(Parser::error(self.peek(), message.to_string()))
+            Err(self.error(&self.peek().clone(), message.to_string()))
         }
     }
 
-    fn error(token: &Token, message: String) -> LoxError { LoxError::parse_error(token, &message) }
+    fn error(&mut self, token: &Token, message: String) -> LoxError
+    {
+        self.had_error = true;
+        LoxError::parse_error(token, &message)
+    }
 
     fn synchronize(&mut self)
     {

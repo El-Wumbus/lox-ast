@@ -19,6 +19,7 @@ pub fn generate(output_dir: &str) -> io::Result<()>
         "Expr",
         &["error", "tokens", "object"],
         &[
+            "Assign   : Token name, Box<Expr> value",
             "Binary   : Box<Expr> left, Token operator, Box<Expr> right",
             "Grouping : Box<Expr> expression",
             "Literal  : Option<Object> value",
