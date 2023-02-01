@@ -1,11 +1,16 @@
 use crate::{error::LoxError, object::Object, tokens::Token};
-use std::collections::{hash_map::Entry, HashMap};
+use std::{
+    cell::RefCell,
+    collections::{hash_map::Entry, HashMap},
+    rc::Rc,
+};
 
 /// An `Environment` contains variable's identifiers and their associated
 /// values.
 #[derive(Debug, Clone)]
 pub struct Environment
 {
+    enclosing: Option<Rc<RefCell<Environment>>>,
     values: HashMap<String, Object>,
 }
 
@@ -15,6 +20,15 @@ impl Environment
     pub fn new() -> Self
     {
         Environment {
+            values: HashMap::new(),
+            enclosing: None,
+        }
+    }
+
+    pub fn new_with_enclosing(enclosing: Rc<RefCell<Environment>>) -> Environment
+    {
+        Environment {
+            enclosing: Some(enclosing),
             values: HashMap::new(),
         }
     }
@@ -28,6 +42,11 @@ impl Environment
         if let Some(o) = self.values.get(&name.lexeme)
         {
             Ok(o.clone())
+        }
+        else if let Some(enclosing) = &self.enclosing
+        {
+            // Check the enclosing scope for the variable
+            enclosing.borrow().get(name)
         }
         else
         {
@@ -44,6 +63,11 @@ impl Environment
         {
             object.insert(value);
             Ok(())
+        }
+        else if let Some(enclosing) = &self.enclosing
+        {
+            // Check the enclosing scope for the variable
+            enclosing.borrow_mut().assign(name, value)
         }
         else
         {
@@ -157,5 +181,64 @@ mod tests
         let tok = Token::new(TokenType::Identifier, "cool".to_string(), None, 0);
 
         assert!(e.assign(&tok, Object::Nil).is_err());
+    }
+
+
+    #[test]
+    fn test_enclose_environment()
+    {
+        let e = Rc::new(RefCell::new(Environment::new()));
+        let f = Environment::new_with_enclosing(Rc::clone(&e));
+
+        assert_eq!(f.enclosing.unwrap().borrow().values, e.borrow().values);
+    }
+
+    #[test]
+    fn test_read_enclosed_environment()
+    {
+        let e = Rc::new(RefCell::new(Environment::new()));
+        e.borrow_mut()
+            .define("variable".to_string(), Object::Num(77.8));
+        let f = Environment::new_with_enclosing(Rc::clone(&e));
+        assert_eq!(
+            f.get(Token::new(
+                TokenType::Identifier,
+                "variable".to_string(),
+                None,
+                0
+            ))
+            .unwrap(),
+            Object::Num(77.8)
+        );
+    }
+
+    #[test]
+    fn test_assign_to_enclosed_environment()
+    {
+        let e = Rc::new(RefCell::new(Environment::new()));
+
+        // Define
+        e.borrow_mut().define("cool".to_string(), Object::Num(77.8));
+        let mut f = Environment::new_with_enclosing(Rc::clone(&e));
+
+        // Assert the variable was defined
+        assert_eq!(
+            f.get(Token::new(
+                TokenType::Identifier,
+                "cool".to_string(),
+                None,
+                0
+            ))
+            .unwrap(),
+            Object::Num(77.8)
+        );
+
+        let tok = Token::new(TokenType::Identifier, "cool".to_string(), None, 0);
+
+        // Assign a new value to the variable
+        f.assign(&tok, Object::Bool(true)).unwrap();
+
+        // Check that the new value has been assigned to the variable
+        assert_eq!(f.get(tok.clone()).unwrap(), Object::Bool(true));
     }
 }
