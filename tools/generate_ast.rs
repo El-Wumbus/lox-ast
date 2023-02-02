@@ -33,6 +33,7 @@ pub fn generate(output_dir: &str) -> io::Result<()>
         "Stmt",
         &["error", "expr", "tokens"],
         &[
+            "Block      : Vec<Stmt> statements",
             "Expression : Expr expression",
             "Print      : Expr expression",
             "Var        : Token name, Option<Expr> initializer",

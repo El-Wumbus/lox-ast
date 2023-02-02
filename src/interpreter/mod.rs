@@ -1,40 +1,34 @@
 pub mod environment;
 
-use std::cell::RefCell;
+use std::{cell::RefCell, rc::Rc};
 
-use crate::{
-    error::LoxError,
-    expr::*,
-    object::Object,
-    stmt::{Stmt, StmtVisitor},
-    tokens::TokenType,
-};
+use crate::{error::LoxError, expr::*, object::Object, stmt::*, tokens::TokenType};
 
 use environment::Environment;
 
 pub struct Interpreter
 {
     /// Our variable environment. We use a RefCell for mutability.
-    environment: RefCell<Environment>,
+    environment: RefCell<Rc<RefCell<Environment>>>,
 }
 
 impl StmtVisitor<()> for Interpreter
 {
-    fn visit_expression_stmt(&self, expr: &crate::stmt::ExpressionStmt) -> Result<(), LoxError>
+    fn visit_expression_stmt(&self, stmt: &ExpressionStmt) -> Result<(), LoxError>
     {
-        self.evaluate(&expr.expression)?;
+        self.evaluate(&stmt.expression)?;
         Ok(())
     }
 
-    fn visit_print_stmt(&self, expr: &crate::stmt::PrintStmt) -> Result<(), LoxError>
+    fn visit_print_stmt(&self, stmt: &PrintStmt) -> Result<(), LoxError>
     {
-        let value = self.evaluate(&expr.expression)?;
+        let value = self.evaluate(&stmt.expression)?;
         // Print the expression
         println!("{value}");
         Ok(())
     }
 
-    fn visit_var_stmt(&self, stmt: &crate::stmt::VarStmt) -> Result<(), LoxError>
+    fn visit_var_stmt(&self, stmt: &VarStmt) -> Result<(), LoxError>
     {
         let value: Object = if let Some(expr) = &stmt.initializer
         {
@@ -46,9 +40,16 @@ impl StmtVisitor<()> for Interpreter
         };
 
         self.environment
+            .borrow()
             .borrow_mut()
             .define(stmt.name.lexeme.clone(), value);
         Ok(())
+    }
+
+    fn visit_block_stmt(&self, stmt: &BlockStmt) -> Result<(), LoxError>
+    {
+        let e = Environment::new_with_enclosing(self.environment.borrow().clone());
+        self.execute_block(&stmt.statements, e)
     }
 }
 
@@ -119,13 +120,14 @@ impl ExprVisitor<Object> for Interpreter
 
     fn visit_variable_expr(&self, expr: &VariableExpr) -> Result<Object, LoxError>
     {
-        self.environment.borrow().get(expr.name.clone())
+        self.environment.borrow().borrow().get(expr.name.clone())
     }
 
     fn visit_assign_expr(&self, expr: &AssignExpr) -> Result<Object, LoxError>
     {
         let value = self.evaluate(&expr.value)?;
         self.environment
+            .borrow()
             .borrow_mut()
             .assign(&expr.name, value.clone())?;
         Ok(value)
@@ -137,7 +139,7 @@ impl Interpreter
     pub fn new() -> Self
     {
         Self {
-            environment: RefCell::new(Environment::new()),
+            environment: RefCell::new(Rc::new(RefCell::new(Environment::new()))),
         }
     }
     fn evaluate(&self, expr: &Expr) -> Result<Object, LoxError> { expr.accept(self) }
@@ -161,6 +163,16 @@ impl Interpreter
     }
 
     fn execute(&self, stmt: &Stmt) -> Result<(), LoxError> { stmt.accept(self) }
+
+    fn execute_block(&self, statements: &[Stmt], environment: Environment) -> Result<(), LoxError>
+    {
+        let previous = self.environment.replace(Rc::new(RefCell::new(environment)));
+        let result = statements
+            .iter()
+            .try_for_each(|statement| self.execute(statement));
+        self.environment.replace(previous);
+        result
+    }
 }
 
 
@@ -592,6 +604,7 @@ mod tests
 
         // Create a let binding so it doesn't drop
         let e = i.environment.borrow();
+        let e = e.borrow();
         assert_eq!(e.get(name).unwrap(), Object::Num(23.0))
     }
 
@@ -608,6 +621,7 @@ mod tests
 
         // Create a let binding so it doesn't drop
         let e = i.environment.borrow();
+        let e = e.borrow();
         assert_eq!(e.get(name).unwrap(), Object::Nil)
     }
 
