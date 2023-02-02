@@ -90,19 +90,49 @@ impl<'a> Parser<'a>
 
     fn statement(&mut self) -> Result<Stmt, LoxError>
     {
-        if self.is_match(&[TokenType::Print])
+        if self.is_match(&[TokenType::If])
         {
-            return self.print_statement();
+            self.if_statement()
         }
-
-        if self.is_match(&[TokenType::LeftBrace])
+        else if self.is_match(&[TokenType::Print])
         {
-            return Ok(Stmt::Block(BlockStmt {
+            self.print_statement()
+        }
+        else if self.is_match(&[TokenType::LeftBrace])
+        {
+            Ok(Stmt::Block(BlockStmt {
                 statements: self.block()?,
-            }));
+            }))
         }
+        else
+        {
+            self.expression_statement()
+        }
+    }
 
-        self.expression_statement()
+    fn if_statement(&mut self) -> Result<Stmt, LoxError>
+    {
+        self.consume(TokenType::LeftParen, "Expect '(' after 'if'.")?;
+
+        let condition = self.expression()?;
+        self.consume(TokenType::RightParen, "Expect ')' after 'if'.")?;
+
+        let then_branch = self.statement()?;
+        let else_branch = if self.is_match(&[TokenType::Else])
+        {
+            Some(Box::new(self.statement()?))
+        }
+        else
+        {
+            None
+        };
+
+
+        Ok(Stmt::If(IfStmt {
+            condition,
+            then_branch: Box::new(then_branch),
+            else_branch,
+        }))
     }
 
     fn block(&mut self) -> Result<Vec<Stmt>, LoxError>
