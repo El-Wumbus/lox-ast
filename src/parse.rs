@@ -134,6 +134,10 @@ impl<'a> Parser<'a>
         {
             self.print_statement()
         }
+        else if self.is_match(&[TokenType::While])
+        {
+            self.while_statement()
+        }
         else if self.is_match(&[TokenType::LeftBrace])
         {
             Ok(Stmt::Block(BlockStmt {
@@ -211,6 +215,15 @@ impl<'a> Parser<'a>
         )?;
 
         Ok(Stmt::Var(VarStmt { name, initializer }))
+    }
+
+    fn while_statement(&mut self) -> Result<Stmt, LoxError>
+    {
+        self.consume(TokenType::LeftParen, "Expect '(' after while.")?;
+        let condition = self.expression()?;
+        self.consume(TokenType::RightParen, "Expect ')' after while.")?;
+        let body = Box::new(self.statement()?);
+        Ok(Stmt::While(WhileStmt { condition, body }))
     }
 
     fn expression_statement(&mut self) -> Result<Stmt, LoxError>

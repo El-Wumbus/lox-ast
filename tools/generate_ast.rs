@@ -39,6 +39,7 @@ pub fn generate(output_dir: &str) -> io::Result<()>
             "If         : Expr condition, Box<Stmt> then_branch, Option<Box<Stmt>> else_branch",
             "Print      : Expr expression",
             "Var        : Token name, Option<Expr> initializer",
+            "While      : Expr condition, Box<Stmt> body",
         ],
     )?;
 
