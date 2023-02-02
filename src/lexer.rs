@@ -1,5 +1,5 @@
 use crate::object::Object;
-use crate::{error::LoxError, tokens::*};
+use crate::{error::LoxResult, tokens::*};
 use std::collections::HashMap;
 pub struct Scanner
 {
@@ -44,6 +44,7 @@ impl Scanner
             ("true".to_string(), TokenType::True),
             ("var".to_string(), TokenType::Var),
             ("while".to_string(), TokenType::While),
+            ("break".to_string(), TokenType::Break),
         ]);
         Self {
             source: source.chars().collect(),
@@ -55,9 +56,9 @@ impl Scanner
         }
     }
 
-    pub fn scan_tokens(&mut self) -> Result<&Vec<Token>, LoxError>
+    pub fn scan_tokens(&mut self) -> Result<&Vec<Token>, LoxResult>
     {
-        let mut had_error: Option<LoxError> = None;
+        let mut had_error: Option<LoxResult> = None;
 
         while !self.is_at_end()
         {
@@ -68,7 +69,7 @@ impl Scanner
                 {}
                 Err(x) =>
                 {
-                    x.report("");
+                    x.report();
                     had_error = Some(x);
                 }
             };
@@ -87,7 +88,7 @@ impl Scanner
         }
     }
 
-    fn scan_token(&mut self) -> Result<(), LoxError>
+    fn scan_token(&mut self) -> Result<(), LoxResult>
     {
         let c = self.advance();
 
@@ -195,7 +196,7 @@ impl Scanner
             _ if c.is_ascii_alphabetic() || c == '_' => self.identifier(),
             _ =>
             {
-                return Err(LoxError::error(
+                return Err(LoxResult::error(
                     self.line,
                     &format!("Unexpected character '{c}'"),
                 ))
@@ -205,7 +206,7 @@ impl Scanner
     }
 
     /// A recursive function that scans for block comments and supports nesting
-    fn scan_comment(&mut self) -> Result<(), LoxError>
+    fn scan_comment(&mut self) -> Result<(), LoxResult>
     {
         loop
         {
@@ -240,7 +241,7 @@ impl Scanner
                     self.line += 1;
                 }
 
-                None => return Err(LoxError::error(self.line, "Unterminated block comment.")),
+                None => return Err(LoxResult::error(self.line, "Unterminated block comment.")),
                 _ =>
                 {
                     self.advance();
@@ -321,7 +322,7 @@ impl Scanner
         }
     }
 
-    fn string(&mut self) -> Result<(), LoxError>
+    fn string(&mut self) -> Result<(), LoxResult>
     {
         // Consume chars until we find the ending quote
         while let Some(ch) = self.peek()
@@ -338,7 +339,7 @@ impl Scanner
         // If there is no ending quote then we complain
         if self.is_at_end()
         {
-            return Err(LoxError::error(self.line, "Unterminated String"));
+            return Err(LoxResult::error(self.line, "Unterminated String"));
         }
         // Consume closing quote
         self.advance();

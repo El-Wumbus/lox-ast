@@ -43,7 +43,6 @@ pub enum TokenType
     Else,
     False,
     Fun,
-    For,
     If,
     Nil,
     Or,
@@ -54,7 +53,10 @@ pub enum TokenType
     True,
     /// Variable declaration
     Var,
+    
     While,
+    For,
+    Break,
 
     /// End of file
     Eof,

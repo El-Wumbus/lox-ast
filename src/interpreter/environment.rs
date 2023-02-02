@@ -1,4 +1,4 @@
-use crate::{error::LoxError, object::Object, tokens::Token};
+use crate::{error::LoxResult, object::Object, tokens::Token};
 use std::{
     cell::RefCell,
     collections::{hash_map::Entry, HashMap},
@@ -37,7 +37,7 @@ impl Environment
     pub fn define(&mut self, name: String, value: Object) { self.values.insert(name, value); }
 
     /// Get a variable's value from the environment
-    pub fn get(&self, name: Token) -> Result<Object, LoxError>
+    pub fn get(&self, name: Token) -> Result<Object, LoxResult>
     {
         if let Some(o) = self.values.get(&name.lexeme)
         {
@@ -50,14 +50,14 @@ impl Environment
         }
         else
         {
-            Err(LoxError::error(
-                name.line,
-                &format!("Undefined variable '{}'.", name.lexeme),
+            Err(LoxResult::new_runtime_error(
+                name.clone(),
+                format!("Undefined variable '{}'.", name.lexeme),
             ))
         }
     }
 
-    pub fn assign(&mut self, name: &Token, value: Object) -> Result<(), LoxError>
+    pub fn assign(&mut self, name: &Token, value: Object) -> Result<(), LoxResult>
     {
         if let Entry::Occupied(mut object) = self.values.entry(name.lexeme.clone())
         {
@@ -71,9 +71,9 @@ impl Environment
         }
         else
         {
-            Err(LoxError::runtime_error(
-                name,
-                &format!("Undefined variable '{}'.", name.lexeme),
+            Err(LoxResult::new_runtime_error(
+                name.clone(),
+                format!("Undefined variable '{}'.", name.lexeme),
             ))
         }
     }

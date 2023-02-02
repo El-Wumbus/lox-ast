@@ -1,4 +1,30 @@
 use crate::tokens::*;
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum LoxResult
+{
+    #[error("[line {}] ParseError: at '{}' {message}", token.line, token.lexeme)]
+    ParseError
+    {
+        token: Token, message: String
+    },
+
+    #[error("[line {}] RuntimeError at '{}': {message}", token.line, token.lexeme)]
+    RuntimeError
+    {
+        token: Token, message: String
+    },
+
+    #[error("[line {line}] Error: {message}")]
+    LoxError
+    {
+        line: usize, message: String
+    }, // Break
+
+    #[error("")]
+    Break,
+}
 
 #[derive(Debug, PartialEq, Clone)]
 /// Contains information used for error reporting
@@ -14,64 +40,43 @@ pub struct LoxError
     message: String,
 }
 
-impl LoxError
+impl LoxResult
 {
+    pub fn report(&self)
+    {
+        eprintln!("{self}");
+    }
+
     /// Create a `LoxError`
     pub fn error(line: usize, message: &str) -> Self
     {
-        let e = Self {
+        let err = Self::LoxError {
             line,
             message: message.to_string(),
-            token: None,
         };
-        e.report("");
-        e
+        eprintln!("{err}");
+        err
     }
 
     /// Create a `LoxError` at parsing time
-    pub fn parse_error(token: &Token, message: &str) -> LoxError
+    pub fn parse_error(token: &Token, message: &str) -> Self
     {
-        let err = LoxError {
-            token: Some(token.clone()),
-            line: token.line,
+        let err = Self::ParseError {
+            token: token.clone(),
             message: message.to_string(),
         };
-        err.report("");
+        eprintln!("{err}");
         err
     }
 
     /// Create a `LoxError` at runtime
-    pub fn runtime_error(token: &Token, message: &str) -> LoxError
+    pub fn new_runtime_error(token: Token, message: String) -> Self
     {
-        let err = LoxError {
-            token: Some(token.clone()),
-            line: token.line,
-            message: message.to_string(),
+        let err = Self::RuntimeError {
+            token,
+            message,
         };
-        err.report("");
+        eprintln!("{err}");
         err
-    }
-
-    /// Print the error
-    pub fn report(&self, loc: &str)
-    {
-        if let Some(token) = self.token.clone()
-        {
-            if token.is(TokenType::Eof)
-            {
-                eprintln!("Error: {} at end {}", token.line, self.message);
-            }
-            else
-            {
-                eprintln!(
-                    "Error: {} at '{}' {}",
-                    token.line, token.lexeme, self.message
-                )
-            }
-        }
-        else
-        {
-            eprintln!("[line {}] Error{}: {}", self.line, loc, self.message);
-        }
     }
 }
