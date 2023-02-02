@@ -148,6 +148,25 @@ impl ExprVisitor<Object> for Interpreter
             .assign(&expr.name, value.clone())?;
         Ok(value)
     }
+
+    fn visit_logical_expr(&self, expr: &LogicalExpr) -> Result<Object, LoxError>
+    {
+        let left = self.evaluate(&expr.left)?;
+
+        if expr.operator.is(TokenType::Or)
+        {
+            if self.is_truthy(&left)
+            {
+                return Ok(left);
+            }
+        }
+        else if !self.is_truthy(&left)
+        {
+            return Ok(left);
+        }
+
+        self.evaluate(&expr.right)
+    }
 }
 
 impl Interpreter
@@ -177,6 +196,7 @@ impl Interpreter
         }
         true
     }
+
 
     fn execute(&self, stmt: &Stmt) -> Result<(), LoxError> { stmt.accept(self) }
 

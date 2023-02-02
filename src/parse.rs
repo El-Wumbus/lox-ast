@@ -49,7 +49,7 @@ impl<'a> Parser<'a>
 
     fn assignment(&mut self) -> Result<Expr, LoxError>
     {
-        let expr = self.eqaulity()?;
+        let expr = self.or()?;
 
         if self.is_match(&[TokenType::Assign])
         {
@@ -66,6 +66,42 @@ impl<'a> Parser<'a>
             self.error(&equals, "Invalid assignment target.".to_string())
                 .report("");
         }
+        Ok(expr)
+    }
+
+    fn or(&mut self) -> Result<Expr, LoxError>
+    {
+        let mut expr = self.and()?;
+
+        while self.is_match(&[TokenType::Or])
+        {
+            let operator = self.previous().clone();
+            let right = Box::new(self.and()?);
+            expr = Expr::Logical(LogicalExpr {
+                left: Box::new(expr),
+                operator,
+                right,
+            });
+        }
+
+        Ok(expr)
+    }
+
+    fn and(&mut self) -> Result<Expr, LoxError>
+    {
+        let mut expr = self.eqaulity()?;
+
+        while self.is_match(&[TokenType::And])
+        {
+            let operator = self.previous().clone();
+            let right = Box::new(self.eqaulity()?);
+            expr = Expr::Logical(LogicalExpr {
+                left: Box::new(expr),
+                operator,
+                right,
+            });
+        }
+
         Ok(expr)
     }
 

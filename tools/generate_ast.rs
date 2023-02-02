@@ -23,6 +23,7 @@ pub fn generate(output_dir: &str) -> io::Result<()>
             "Binary   : Box<Expr> left, Token operator, Box<Expr> right",
             "Grouping : Box<Expr> expression",
             "Literal  : Option<Object> value",
+            "Logical  : Box<Expr> left, Token operator, Box<Expr> right",
             "Unary    : Token operator, Box<Expr> right",
             "Variable : Token name",
         ],
