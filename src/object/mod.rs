@@ -1,6 +1,10 @@
+pub mod callable;
+use callable::*;
+
+
 use std::ops::{Add, Div, Mul, Sub};
 
-#[derive(Debug, PartialEq, Clone, PartialOrd)]
+#[derive(Debug, PartialEq, Clone)]
 /// `Object` represents an object type in lox. There are four object variants
 /// (Number, String, Boolean, and Nil (NULL)) accompanied by two error types.
 pub enum Object
@@ -17,12 +21,15 @@ pub enum Object
     /// Nothing (like None or NULL)
     Nil,
 
+    Func(Callable),
+
     /// Tried to do an operation on incompatable types
     ArithmeticError,
 
     /// Tried to compare incomparable types
     ComparisonError,
 }
+
 
 impl Sub for Object
 {
@@ -118,6 +125,7 @@ impl std::fmt::Display for Object
             {
                 panic!("Shouldn't be trying to print erronious Objects")
             }
+            Self::Func(x) => write!(f, "{x}"),
         }
     }
 }

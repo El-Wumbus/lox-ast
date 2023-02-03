@@ -130,7 +130,7 @@ impl<'a> Parser<'a>
         {
             let peek = self.peek().clone();
             self.consume(TokenType::Semicolon, "Expect ';' after break statement.")?;
-            Ok(Stmt::Break(BreakStmt { token: peek}))
+            Ok(Stmt::Break(BreakStmt { token: peek }))
         }
         else if self.is_match(&[TokenType::If])
         {
@@ -417,7 +417,59 @@ impl<'a> Parser<'a>
                 right: Box::new(right),
             }));
         }
-        self.primary()
+        self.call()
+    }
+
+    fn call(&mut self) -> Result<Expr, LoxResult>
+    {
+        let mut expr = self.primary()?;
+
+        loop
+        {
+            if self.is_match(&[TokenType::LeftParen])
+            {
+                expr = self.finish_call(expr)?;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        Ok(expr)
+    }
+
+    fn finish_call(&mut self, callee: Expr) -> Result<Expr, LoxResult>
+    {
+        let mut arguments = Vec::new();
+
+        if !self.check(TokenType::RightParen)
+        {
+            arguments.push(self.expression()?);
+
+            while self.is_match(&[TokenType::Comma])
+            {
+                if arguments.len() >= 255
+                {
+                    // Ensure we only see this error message once per argument
+                    if !self.had_error
+                    {
+                        LoxResult::parse_error(self.peek(), "Can't have more than 255 arguments.");
+                        self.had_error = true;
+                    }
+                }
+
+                arguments.push(self.expression()?);
+            }
+        }
+
+        let paren = self.consume(TokenType::RightParen, "Expect ')' after arguments.")?;
+
+        Ok(Expr::Call(CallExpr {
+            callee: Box::new(callee),
+            paren,
+            arguments,
+        }))
     }
 
     /// It matches a primary, the highest level of precedence.

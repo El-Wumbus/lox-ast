@@ -53,7 +53,7 @@ pub enum TokenType
     True,
     /// Variable declaration
     Var,
-    
+
     While,
     For,
     Break,

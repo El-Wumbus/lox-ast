@@ -1,13 +1,23 @@
 pub mod environment;
+pub mod native_functions;
 
+use native_functions::*;
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{error::LoxResult, expr::*, object::Object, stmt::*, tokens::TokenType};
-
+use crate::{
+    error::LoxResult,
+    expr::*,
+    object::{callable::Callable, Object},
+    stmt::*,
+    tokens::TokenType,
+};
 use environment::Environment;
 
+#[derive(Debug)]
 pub struct Interpreter
 {
+    globals: Rc<RefCell<Environment>>,
+
     /// Our variable environment. We use a RefCell for mutability.
     environment: RefCell<Rc<RefCell<Environment>>>,
 
@@ -201,15 +211,62 @@ impl ExprVisitor<Object> for Interpreter
 
         self.evaluate(&expr.right)
     }
+
+    fn visit_call_expr(&self, expr: &CallExpr) -> Result<Object, LoxResult>
+    {
+        let callee = self.evaluate(&expr.callee)?;
+
+        let mut arguments = Vec::new();
+        for argument in &expr.arguments
+        {
+            arguments.push(self.evaluate(argument)?);
+        }
+
+        if let Object::Func(function) = callee
+        {
+            let (len, arity) = (arguments.len(), function.func.arity());
+            if len != arity
+            {
+                return Err(LoxResult::new_runtime_error(
+                    expr.paren.clone(),
+                    format!("Expected {arity} arguments but got {len}"),
+                ));
+            }
+            function.func.call(self, arguments)
+        }
+        else
+        {
+            Err(LoxResult::new_runtime_error(
+                expr.paren.clone(),
+                "Can only call functions and classes".to_string(),
+            ))
+        }
+    }
 }
+
+impl Default for Interpreter
+{
+    fn default() -> Self { Self::new() }
+}
+
 
 impl Interpreter
 {
     pub fn new() -> Self
     {
+        let globals = Rc::new(RefCell::new(Environment::new()));
+
+        globals.borrow_mut().define(
+            "clock".to_string(),
+            Object::Func(Callable {
+                func: Rc::new(NativeClock),
+            }),
+        );
+
         Self {
-            environment: RefCell::new(Rc::new(RefCell::new(Environment::new()))),
+            environment: RefCell::new(Rc::clone(&globals)),
             loop_nest: RefCell::new(0),
+            globals,
         }
     }
     fn evaluate(&self, expr: &Expr) -> Result<Object, LoxResult> { expr.accept(self) }

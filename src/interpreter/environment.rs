@@ -7,7 +7,7 @@ use std::{
 
 /// An `Environment` contains variable's identifiers and their associated
 /// values.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Environment
 {
     enclosing: Option<Rc<RefCell<Environment>>>,

@@ -22,6 +22,12 @@ pub enum LoxResult
         line: usize, message: String
     }, // Break
 
+    #[error("SystemError: {message}")]
+    SystemError
+    {
+        message: String
+    },
+
     #[error("")]
     Break,
 }
@@ -58,6 +64,15 @@ impl LoxResult
         err
     }
 
+    pub fn new_system_error(message: &str) -> Self
+    {
+        let e = Self::SystemError {
+            message: message.to_string(),
+        };
+        eprintln!("{e}");
+        e
+    }
+
     /// Create a `LoxError` at parsing time
     pub fn parse_error(token: &Token, message: &str) -> Self
     {
@@ -72,10 +87,7 @@ impl LoxResult
     /// Create a `LoxError` at runtime
     pub fn new_runtime_error(token: Token, message: String) -> Self
     {
-        let err = Self::RuntimeError {
-            token,
-            message,
-        };
+        let err = Self::RuntimeError { token, message };
         eprintln!("{err}");
         err
     }
