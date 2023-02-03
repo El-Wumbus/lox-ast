@@ -107,7 +107,11 @@ impl<'a> Parser<'a>
 
     fn declaration(&mut self) -> Result<Stmt, LoxResult>
     {
-        let res = if self.is_match(&[TokenType::Var])
+        let res = if self.is_match(&[TokenType::Fun])
+        {
+            self.function("function")
+        }
+        else if self.is_match(&[TokenType::Var])
         {
             self.var_declaration()
         }
@@ -123,6 +127,46 @@ impl<'a> Parser<'a>
         res
     }
 
+    fn function(&mut self, kind: &str) -> Result<Stmt, LoxResult>
+    {
+        let name = self.consume(TokenType::Identifier, &format!("Expect {kind} name"))?;
+
+        self.consume(
+            TokenType::LeftParen,
+            &format!("Expect '(' after {kind} name"),
+        )?;
+
+        let mut params = Vec::new();
+
+        if !self.check(TokenType::RightParen)
+        {
+            params.push(self.consume(TokenType::Identifier, "Expect parameter name")?);
+            while self.is_match(&[TokenType::Comma])
+            {
+                if params.len() >= 255 && !self.had_error
+                {
+                    self.error(
+                        &self.peek().clone(),
+                        "Can't have more than 255 parameters.".to_string(),
+                    );
+                }
+
+                params.push(self.consume(TokenType::Identifier, "Expect parameter name")?);
+            }
+        }
+
+        self.consume(TokenType::RightParen, "Expect ')' after parameters.")?;
+
+        // start parsing body of function
+
+        self.consume(
+            TokenType::LeftBrace,
+            &format!("Expect '{{' before {kind} body"),
+        )?;
+        let body = self.block()?;
+
+        Ok(Stmt::Function(FunctionStmt { name, params, body }))
+    }
 
     fn statement(&mut self) -> Result<Stmt, LoxResult>
     {
@@ -454,8 +498,10 @@ impl<'a> Parser<'a>
                     // Ensure we only see this error message once per argument
                     if !self.had_error
                     {
-                        LoxResult::parse_error(self.peek(), "Can't have more than 255 arguments.");
-                        self.had_error = true;
+                        self.error(
+                            &self.peek().clone(),
+                            "Can't have more than 255 function arguments".to_string(),
+                        );
                     }
                 }
 

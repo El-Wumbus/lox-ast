@@ -111,6 +111,8 @@ impl StmtVisitor<()> for Interpreter
             Err(LoxResult::Break)
         }
     }
+
+    fn visit_function_stmt(&self, expr: &FunctionStmt) -> Result<(), LoxResult> { todo!() }
 }
 
 impl ExprVisitor<Object> for Interpreter

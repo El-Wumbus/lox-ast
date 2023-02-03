@@ -22,6 +22,12 @@ pub enum LoxResult
         line: usize, message: String
     }, // Break
 
+    #[error("[line {line}] LexError: {message}")]
+    LexError
+    {
+        line: usize, message: String
+    },
+
     #[error("SystemError: {message}")]
     SystemError
     {
@@ -51,6 +57,17 @@ impl LoxResult
     pub fn report(&self)
     {
         eprintln!("{self}");
+    }
+
+    /// Create a `LoxError`
+    pub fn new_lex_error(line: usize, message: &str) -> Self
+    {
+        let err = Self::LexError {
+            line,
+            message: message.to_string(),
+        };
+        eprintln!("{err}");
+        err
     }
 
     /// Create a `LoxError`

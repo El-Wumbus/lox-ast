@@ -69,7 +69,6 @@ impl Scanner
                 {}
                 Err(x) =>
                 {
-                    x.report();
                     had_error = Some(x);
                 }
             };
@@ -196,7 +195,7 @@ impl Scanner
             _ if c.is_ascii_alphabetic() || c == '_' => self.identifier(),
             _ =>
             {
-                return Err(LoxResult::error(
+                return Err(LoxResult::new_lex_error(
                     self.line,
                     &format!("Unexpected character '{c}'"),
                 ))
@@ -241,7 +240,13 @@ impl Scanner
                     self.line += 1;
                 }
 
-                None => return Err(LoxResult::error(self.line, "Unterminated block comment.")),
+                None =>
+                {
+                    return Err(LoxResult::new_lex_error(
+                        self.line,
+                        "Unterminated block comment.",
+                    ))
+                }
                 _ =>
                 {
                     self.advance();
@@ -339,7 +344,7 @@ impl Scanner
         // If there is no ending quote then we complain
         if self.is_at_end()
         {
-            return Err(LoxResult::error(self.line, "Unterminated String"));
+            return Err(LoxResult::new_lex_error(self.line, "Unterminated String"));
         }
         // Consume closing quote
         self.advance();
