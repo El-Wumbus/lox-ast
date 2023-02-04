@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::error::*;
 use crate::expr::*;
 use crate::object::*;
@@ -133,7 +135,7 @@ impl<'a> Parser<'a>
 
         self.consume(
             TokenType::LeftParen,
-            &format!("Expect '(' after {kind} name"),
+            &format!("Expect '(' after {kind} name."),
         )?;
 
         let mut params = Vec::new();
@@ -163,9 +165,13 @@ impl<'a> Parser<'a>
             TokenType::LeftBrace,
             &format!("Expect '{{' before {kind} body"),
         )?;
-        let body = self.block()?;
+        let body = Rc::new(self.block()?);
 
-        Ok(Stmt::Function(FunctionStmt { name, params, body }))
+        Ok(Stmt::Function(FunctionStmt {
+            name,
+            params: Rc::new(params),
+            body,
+        }))
     }
 
     fn statement(&mut self) -> Result<Stmt, LoxResult>
@@ -472,7 +478,7 @@ impl<'a> Parser<'a>
         {
             if self.is_match(&[TokenType::LeftParen])
             {
-                expr = self.finish_call(expr)?;
+                expr = self.finish_call(&Rc::new(expr))?;
             }
             else
             {
@@ -483,14 +489,14 @@ impl<'a> Parser<'a>
         Ok(expr)
     }
 
-    fn finish_call(&mut self, callee: Expr) -> Result<Expr, LoxResult>
+
+    fn finish_call(&mut self, callee: &Rc<Expr>) -> Result<Expr, LoxResult>
     {
         let mut arguments = Vec::new();
 
         if !self.check(TokenType::RightParen)
         {
             arguments.push(self.expression()?);
-
             while self.is_match(&[TokenType::Comma])
             {
                 if arguments.len() >= 255
@@ -504,15 +510,17 @@ impl<'a> Parser<'a>
                         );
                     }
                 }
-
-                arguments.push(self.expression()?);
+                else
+                {
+                    arguments.push(self.expression()?);
+                }
             }
         }
 
         let paren = self.consume(TokenType::RightParen, "Expect ')' after arguments.")?;
 
         Ok(Expr::Call(CallExpr {
-            callee: Box::new(callee),
+            callee: Rc::clone(callee),
             paren,
             arguments,
         }))

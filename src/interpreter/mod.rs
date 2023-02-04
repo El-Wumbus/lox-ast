@@ -7,6 +7,7 @@ use std::{cell::RefCell, rc::Rc};
 use crate::{
     error::LoxResult,
     expr::*,
+    lox_function::LoxFunction,
     object::{callable::Callable, Object},
     stmt::*,
     tokens::TokenType,
@@ -16,7 +17,7 @@ use environment::Environment;
 #[derive(Debug)]
 pub struct Interpreter
 {
-    globals: Rc<RefCell<Environment>>,
+    pub globals: Rc<RefCell<Environment>>,
 
     /// Our variable environment. We use a RefCell for mutability.
     environment: RefCell<Rc<RefCell<Environment>>>,
@@ -112,7 +113,17 @@ impl StmtVisitor<()> for Interpreter
         }
     }
 
-    fn visit_function_stmt(&self, expr: &FunctionStmt) -> Result<(), LoxResult> { todo!() }
+    fn visit_function_stmt(&self, stmt: &FunctionStmt) -> Result<(), LoxResult>
+    {
+        let function = LoxFunction::new(stmt);
+        self.environment.borrow().borrow_mut().define(
+            stmt.name.get_identifier(),
+            Object::Func(Callable {
+                func: Rc::new(function),
+            }),
+        );
+        Ok(())
+    }
 }
 
 impl ExprVisitor<Object> for Interpreter
@@ -295,8 +306,11 @@ impl Interpreter
 
     fn execute(&self, stmt: &Stmt) -> Result<(), LoxResult> { stmt.accept(self) }
 
-    fn execute_block(&self, statements: &[Stmt], environment: Environment)
-        -> Result<(), LoxResult>
+    pub fn execute_block(
+        &self,
+        statements: &[Stmt],
+        environment: Environment,
+    ) -> Result<(), LoxResult>
     {
         let previous = self.environment.replace(Rc::new(RefCell::new(environment)));
         let result = statements

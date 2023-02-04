@@ -17,11 +17,16 @@ pub fn generate(output_dir: &str) -> io::Result<()>
     define_ast(
         output_dir,
         "Expr",
-        &["error", "tokens", "object"],
+        &[
+            "crate::error::*",
+            "crate::object::*",
+            "crate::tokens::*",
+            "std::rc::Rc",
+        ],
         &[
             "Assign   : Token name, Box<Expr> value",
             "Binary   : Box<Expr> left, Token operator, Box<Expr> right",
-            "Call     : Box<Expr> callee, Token paren, Vec<Expr> arguments",
+            "Call     : Rc<Expr> callee, Token paren, Vec<Expr> arguments",
             "Grouping : Box<Expr> expression",
             "Literal  : Option<Object> value",
             "Logical  : Box<Expr> left, Token operator, Box<Expr> right",
@@ -33,12 +38,17 @@ pub fn generate(output_dir: &str) -> io::Result<()>
     define_ast(
         output_dir,
         "Stmt",
-        &["error", "expr", "tokens"],
+        &[
+            "crate::error::*",
+            "crate::expr::*",
+            "crate::tokens::*",
+            "std::rc::Rc",
+        ],
         &[
             "Block      : Vec<Stmt> statements",
             "Break      : Token token",
             "Expression : Expr expression",
-            "Function   : Token name, Vec<Token> params, Vec<Stmt> body",
+            "Function   : Token name, Rc<Vec<Token>> params, Rc<Vec<Stmt>> body",
             "If         : Expr condition, Box<Stmt> then_branch, Option<Box<Stmt>> else_branch",
             "Print      : Expr expression",
             "Var        : Token name, Option<Expr> initializer",
@@ -59,7 +69,7 @@ fn define_ast(output_dir: &str, base_name: &str, imports: &[&str], types: &[&str
     // Write imports to file
     for import in imports
     {
-        writeln!(file, "use crate::{import}::*;")?;
+        writeln!(file, "use {import};")?;
     }
 
     for ttype in types

@@ -2,7 +2,7 @@
 use crate::error::*;
 use crate::interpreter::*;
 use crate::lexer::*;
-use crate::parse::Parser;
+use crate::parser::Parser;
 use std::io::{self, stdout, BufRead, Write};
 
 pub struct Lox

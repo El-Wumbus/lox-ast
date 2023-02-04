@@ -1,0 +1,12 @@
+if (1 > 2)
+{
+    print "You might wanna see this!";
+}
+else if (1 / 2 * 8 == 4)
+{
+    print "We're smort over here";
+}
+else
+{
+    print "Who wrote this?";
+}

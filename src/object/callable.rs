@@ -21,7 +21,7 @@ impl std::fmt::Debug for Callable
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
     {
-        f.debug_struct("Callable").finish()
+        write!(f, "{}", LoxCallable::to_string(self))
     }
 }
 
@@ -33,15 +33,21 @@ impl LoxCallable for Callable
     }
 
     fn arity(&self) -> usize { self.func.arity() }
+
+    fn to_string(&self) -> String { self.func.to_string() }
 }
 
 impl std::fmt::Display for Callable
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "Function") }
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
+        write!(f, "<fn {}>", self.func.to_string())
+    }
 }
 
 pub trait LoxCallable
 {
     fn call(&self, interpreter: &Interpreter, arguments: Vec<Object>) -> Result<Object, LoxResult>;
     fn arity(&self) -> usize;
+    fn to_string(&self) -> String;
 }

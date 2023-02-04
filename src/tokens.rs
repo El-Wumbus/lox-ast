@@ -77,6 +77,8 @@ pub struct Token
 
 impl Token
 {
+    pub fn get_identifier(&self) -> String { self.lexeme.to_string() }
+
     /// Create a new `Token`
     pub fn new(ttype: TokenType, lexeme: String, literal: Option<Object>, line: usize) -> Self
     {

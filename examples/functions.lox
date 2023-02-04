@@ -1,0 +1,24 @@
+var global = "global";
+
+// Use the `fun` keyword to declare functions.
+// The parameters for the functions are a comma-separated list of named variables
+// of any object type. Parameters are scoped to the function block. 
+fun foo(bar, soap)
+{
+    if (bar > soap)
+    {
+        print bar + soap;
+    }
+    else if (soap == 90)
+    {
+        print "DON'T forget the soap";
+    }
+    else
+    {
+        print bar + " is less than " + soap + " and " + soap + " isn't 90.";
+    }
+}
+
+foo(70, 80);
+foo(90, 90);
+foo(2.2, 2);

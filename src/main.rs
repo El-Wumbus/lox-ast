@@ -3,8 +3,9 @@ mod expr;
 mod interpreter;
 mod lexer;
 mod lox;
+mod lox_function;
 mod object;
-mod parse;
+mod parser;
 mod stmt;
 mod tokens;
 
