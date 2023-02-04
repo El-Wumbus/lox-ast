@@ -1,18 +1,19 @@
-pub mod environment;
-pub mod native_functions;
-
-use native_functions::*;
 use std::{cell::RefCell, rc::Rc};
+
+pub mod environment;
+pub mod lox_function;
+pub mod native_functions;
 
 use crate::{
     error::LoxResult,
     expr::*,
-    lox_function::LoxFunction,
     object::{callable::Callable, Object},
     stmt::*,
     tokens::TokenType,
 };
 use environment::Environment;
+use lox_function::LoxFunction;
+use native_functions::*;
 
 #[derive(Debug)]
 pub struct Interpreter
@@ -123,6 +124,18 @@ impl StmtVisitor<()> for Interpreter
             }),
         );
         Ok(())
+    }
+
+    fn visit_return_stmt(&self, stmt: &ReturnStmt) -> Result<(), LoxResult>
+    {
+        if let Some(value) = &stmt.value
+        {
+            Err(LoxResult::return_value(self.evaluate(value)?))
+        }
+        else
+        {
+            Err(LoxResult::return_value(Object::Nil))
+        }
     }
 }
 

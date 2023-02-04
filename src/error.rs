@@ -1,4 +1,4 @@
-use crate::tokens::*;
+use crate::{object::Object, tokens::*};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -36,6 +36,12 @@ pub enum LoxResult
 
     #[error("")]
     Break,
+
+    #[error("")]
+    Return
+    {
+        value: Object
+    },
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -58,6 +64,8 @@ impl LoxResult
     {
         eprintln!("{self}");
     }
+
+    pub fn return_value(value: Object) -> Self { Self::Return { value } }
 
     /// Create a `LoxError`
     pub fn new_lex_error(line: usize, message: &str) -> Self

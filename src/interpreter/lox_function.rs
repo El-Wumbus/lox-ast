@@ -37,8 +37,12 @@ impl LoxCallable for LoxFunction
             e.define(param.get_identifier(), arg.clone());
         }
 
-        interpreter.execute_block(&self.body, e)?;
-        Ok(Object::Nil)
+        match interpreter.execute_block(&self.body, e)
+        {
+            Err(LoxResult::Return { value }) => Ok(value),
+            Err(e) => Err(e),
+            Ok(_) => Ok(Object::Nil),
+        }
     }
 
     fn arity(&self) -> usize { self.params.len() }
