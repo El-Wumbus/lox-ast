@@ -116,7 +116,7 @@ impl StmtVisitor<()> for Interpreter
 
     fn visit_function_stmt(&self, stmt: &FunctionStmt) -> Result<(), LoxResult>
     {
-        let function = LoxFunction::new(stmt);
+        let function = LoxFunction::new(stmt, &self.environment.borrow());
         self.environment.borrow().borrow_mut().define(
             stmt.name.get_identifier(),
             Object::Func(Callable {
